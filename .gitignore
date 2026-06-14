@@ -4,7 +4,7 @@ node_modules/
 # Environment variables (NEVER commit - contains API keys)
 .env
 .env.local
-.env.*
+!.env.example
 
 # Netlify local cache
 .netlify/

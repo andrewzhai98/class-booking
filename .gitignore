@@ -1,0 +1,27 @@
+# Dependencies (never upload - restore with npm install)
+node_modules/
+
+# Environment variables (NEVER commit - contains API keys)
+.env
+.env.local
+.env.*
+
+# Netlify local cache
+.netlify/
+
+# macOS system files
+.DS_Store
+._*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+Thumbs.db

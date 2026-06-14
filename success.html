@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmed</title>
+  <style>
+    :root {
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#ec4899;
+      --primary2:#8b5cf6;
+      --border:#e5e7eb;
+      --shadow:0 16px 40px rgba(17,24,39,.08);
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      font-family:Inter,Arial,sans-serif;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      color:var(--text);
+    }
+
+    .card {
+      width:min(680px,100%);
+      background:white;
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:32px;
+      box-shadow:var(--shadow);
+      text-align:center;
+    }
+
+    .badge {
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#f0fdf4;
+      color:#15803d;
+      font-weight:900;
+      font-size:13px;
+      margin-bottom:16px;
+    }
+
+    h1 {
+      font-size:clamp(32px,5vw,48px);
+      line-height:1.05;
+      margin:0 0 14px;
+    }
+
+    p {
+      color:var(--muted);
+      line-height:1.7;
+      font-size:17px;
+      margin:0 0 18px;
+    }
+
+    .summary {
+      text-align:left;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      margin:22px 0;
+      color:var(--muted);
+      line-height:1.8;
+    }
+
+    .summary strong { color:var(--text); }
+
+    .btns {
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:center;
+      margin-top:22px;
+    }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px 20px;
+      border-radius:999px;
+      text-decoration:none;
+      font-weight:900;
+    }
+
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
+    .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
+
+    @media (max-width:640px) {
+      .btn { width:100%; }
+      .card { padding:24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">Booking confirmed</div>
+    <h1>Your trial class is booked</h1>
+    <p>Thank you. A confirmation has been created and the teacher will follow up if any details need to be adjusted.</p>
+
+    <div class="summary">
+      <div><strong>Name:</strong> <span id="nameText">Guest</span></div>
+      <div><strong>Time:</strong> <span id="timeText">Confirmed</span></div>
+      <div><strong>Time zone:</strong> <span id="timezoneText">Your local time zone</span></div>
+    </div>
+
+    <p>Please save the time in your calendar. If you need to change the booking, contact the teacher directly.</p>
+
+    <div class="btns">
+      <a class="btn btn-primary" href="index.html">Back to home</a>
+      <a class="btn btn-secondary" href="booking.html">Book another class</a>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name") || "Guest";
+    const time = params.get("time");
+    const timezone = params.get("timezone") || "Your local time zone";
+
+    document.getElementById("nameText").textContent = name;
+    document.getElementById("timezoneText").textContent = timezone;
+
+    if (time) {
+      document.getElementById("timeText").textContent = new Intl.DateTimeFormat("en", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      }).format(new Date(time));
+    }
+  </script>
+</body>
+</html>

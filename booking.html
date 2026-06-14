@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Free Trial Class</title>
+  <style>
+    :root {
+      --bg:#f8fafc;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#ec4899;
+      --primary2:#8b5cf6;
+      --border:#e5e7eb;
+      --white:#fff;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --shadow:0 16px 40px rgba(17,24,39,.08);
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      color:var(--text);
+    }
+
+    .container { width:min(1080px,92%); margin:0 auto; }
+    .page { padding:28px 0 48px; }
+
+    .topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .back {
+      color:var(--muted);
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .badge {
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fdf2f8;
+      color:#be185d;
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .layout {
+      display:grid;
+      grid-template-columns:.85fr 1.15fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .card {
+      background:white;
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    h1 {
+      font-size:clamp(32px,5vw,48px);
+      line-height:1.05;
+      margin:12px 0 14px;
+    }
+
+    h2 { margin:0 0 12px; font-size:22px; }
+
+    .sub {
+      font-size:17px;
+      color:var(--muted);
+      line-height:1.7;
+      margin:0 0 18px;
+    }
+
+    .info-list { display:grid; gap:10px; margin-top:18px; }
+
+    .info-item {
+      background:#faf5ff;
+      border:1px solid #ede9fe;
+      border-radius:16px;
+      padding:12px;
+      color:#4c1d95;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .steps {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .step {
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:800;
+      text-align:center;
+      background:#fff;
+    }
+
+    .step.active {
+      color:white;
+      border-color:transparent;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+    }
+
+    .field { margin-bottom:14px; }
+
+    label {
+      display:block;
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:7px;
+    }
+
+    input, select, textarea {
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:13px 14px;
+      font-size:15px;
+      font-family:inherit;
+      outline:none;
+      background:#fff;
+      color:var(--text);
+    }
+
+    textarea { min-height:90px; resize:vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color:#a78bfa;
+      box-shadow:0 0 0 4px rgba(167,139,250,.18);
+    }
+
+    .calendar-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .month-title { font-size:18px; font-weight:900; }
+    .month-actions { display:flex; gap:8px; }
+
+    .icon-btn {
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:white;
+      color:var(--text);
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .calendar-grid {
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:8px;
+    }
+
+    .weekday {
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      padding:4px 0;
+    }
+
+    .day {
+      min-height:44px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .day:hover { border-color:#c4b5fd; background:#faf5ff; }
+    .day.disabled { color:#cbd5e1; background:#f8fafc; cursor:not-allowed; }
+    .day.selected { color:white; border-color:transparent; background:linear-gradient(90deg,var(--primary),var(--primary2)); }
+
+    .timezone-row {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+      margin:14px 0 18px;
+      line-height:1.5;
+    }
+
+    .slots {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .slot {
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+      padding:13px;
+      cursor:pointer;
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .slot:hover { border-color:#c4b5fd; background:#faf5ff; }
+    .slot.selected { color:white; border-color:transparent; background:linear-gradient(90deg,var(--primary),var(--primary2)); }
+
+    .notice {
+      margin-top:12px;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:14px;
+      line-height:1.6;
+      display:none;
+    }
+
+    .notice.show { display:block; }
+    .notice.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+    .notice.error { background:#fef2f2; color:var(--danger); border:1px solid #fecaca; }
+    .notice.success { background:#f0fdf4; color:var(--success); border:1px solid #bbf7d0; }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      padding:14px 20px;
+      border-radius:999px;
+      border:none;
+      text-decoration:none;
+      font-weight:900;
+      cursor:pointer;
+      font-size:15px;
+      font-family:inherit;
+    }
+
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
+    .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+
+    .form-actions { display:grid; gap:10px; margin-top:18px; }
+
+    .summary {
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:16px;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .summary strong { color:var(--text); }
+    .hidden { display:none; }
+
+    @media (max-width:900px) {
+      .layout, .steps { grid-template-columns:1fr; }
+      .topbar { align-items:flex-start; flex-direction:column; }
+      .slots { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="container">
+      <div class="topbar">
+        <a class="back" href="index.html">← Back to home</a>
+        <span class="badge">Free Trial Class · Online · 30 minutes</span>
+      </div>
+
+      <div class="layout">
+        <section class="card">
+          <span class="badge">Book your lesson</span>
+          <h1>Book a Free Trial Class</h1>
+          <p class="sub">
+            Choose a time that works for you. The booking system will check the teacher's calendar and show available time slots.
+          </p>
+
+          <div class="info-list">
+            <div class="info-item">Duration: 30 minutes</div>
+            <div class="info-item">Format: Online lesson</div>
+            <div class="info-item">Time zone: automatically detected</div>
+            <div class="info-item">You will receive a confirmation after booking</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="steps">
+            <div id="stepDate" class="step active">1. Choose date</div>
+            <div id="stepTime" class="step">2. Choose time</div>
+            <div id="stepDetails" class="step">3. Your details</div>
+          </div>
+
+          <div id="bookingSummary" class="summary">
+            <div><strong>Class:</strong> Free Trial Class</div>
+            <div><strong>Duration:</strong> 30 minutes</div>
+            <div><strong>Selected time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
+          </div>
+
+          <div id="datePanel">
+            <div class="calendar-head">
+              <div class="month-title" id="monthTitle"></div>
+              <div class="month-actions">
+                <button class="icon-btn" id="prevMonthBtn" type="button">‹</button>
+                <button class="icon-btn" id="nextMonthBtn" type="button">›</button>
+              </div>
+            </div>
+
+            <div class="calendar-grid" id="weekdayGrid"></div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div class="timezone-row">
+              <span>Detected time zone:</span>
+              <strong id="timezoneText"></strong>
+            </div>
+
+            <div id="dateNotice" class="notice info show">
+              Please choose a date to see available times.
+            </div>
+          </div>
+
+          <div id="timePanel" class="hidden">
+            <h2>Available times</h2>
+            <p class="sub" id="selectedDateText"></p>
+            <div id="slots" class="slots"></div>
+            <div id="slotNotice" class="notice info show">
+              Loading available times...
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" type="button" id="backToDateBtn">Choose another date</button>
+            </div>
+          </div>
+
+          <form id="bookingForm" class="hidden">
+            <h2>Your details</h2>
+
+            <div class="field">
+              <label for="name">Name *</label>
+              <input id="name" name="name" type="text" autocomplete="name" required />
+            </div>
+
+            <div class="field">
+              <label for="email">Email *</label>
+              <input id="email" name="email" type="email" autocomplete="email" required />
+            </div>
+
+            <div class="field">
+              <label for="contact">WeChat / WhatsApp</label>
+              <input id="contact" name="contact" type="text" placeholder="Optional" />
+            </div>
+
+            <div class="field">
+              <label for="studentLevel">Current English level</label>
+              <select id="studentLevel" name="studentLevel">
+                <option value="">Not sure</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Elementary">Elementary</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Upper-intermediate">Upper-intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="goal">Learning goal</label>
+              <select id="goal" name="goal">
+                <option value="">Please select</option>
+                <option value="Speaking practice">Speaking practice</option>
+                <option value="Interview English">Interview English</option>
+                <option value="Daily communication">Daily communication</option>
+                <option value="Study abroad">Study abroad</option>
+                <option value="Travel English">Travel English</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="notes">Notes</label>
+              <textarea id="notes" name="notes" placeholder="Tell us anything useful before the trial class."></textarea>
+            </div>
+
+            <div id="formNotice" class="notice"></div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" id="submitBtn">Confirm Booking</button>
+              <button class="btn btn-secondary" type="button" id="backToTimeBtn">Choose another time</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const CONFIG = {
+      eventType: "free-trial-class",
+      eventTitle: "Free Trial English Class",
+      durationMinutes: 30,
+      maxDaysAhead: 30,
+      availabilityEndpoint: "/.netlify/functions/availability",
+      bookingEndpoint: "/.netlify/functions/book"
+    };
+
+    const state = {
+      today: startOfDay(new Date()),
+      currentMonth: new Date(),
+      selectedDate: null,
+      selectedSlot: null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      slots: []
+    };
+
+    const elements = {
+      stepDate: document.getElementById("stepDate"),
+      stepTime: document.getElementById("stepTime"),
+      stepDetails: document.getElementById("stepDetails"),
+      monthTitle: document.getElementById("monthTitle"),
+      prevMonthBtn: document.getElementById("prevMonthBtn"),
+      nextMonthBtn: document.getElementById("nextMonthBtn"),
+      weekdayGrid: document.getElementById("weekdayGrid"),
+      calendarGrid: document.getElementById("calendarGrid"),
+      timezoneText: document.getElementById("timezoneText"),
+      timePanel: document.getElementById("timePanel"),
+      datePanel: document.getElementById("datePanel"),
+      selectedDateText: document.getElementById("selectedDateText"),
+      selectedTimeText: document.getElementById("selectedTimeText"),
+      slots: document.getElementById("slots"),
+      slotNotice: document.getElementById("slotNotice"),
+      bookingForm: document.getElementById("bookingForm"),
+      formNotice: document.getElementById("formNotice"),
+      submitBtn: document.getElementById("submitBtn"),
+      backToDateBtn: document.getElementById("backToDateBtn"),
+      backToTimeBtn: document.getElementById("backToTimeBtn")
+    };
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    function init() {
+      state.currentMonth = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
+      elements.timezoneText.textContent = state.timezone;
+      renderWeekdays();
+      renderCalendar();
+      elements.prevMonthBtn.addEventListener("click", goToPreviousMonth);
+      elements.nextMonthBtn.addEventListener("click", goToNextMonth);
+      elements.backToDateBtn.addEventListener("click", showDatePanel);
+      elements.backToTimeBtn.addEventListener("click", showTimePanel);
+      elements.bookingForm.addEventListener("submit", submitBooking);
+    }
+
+    function renderWeekdays() {
+      const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      elements.weekdayGrid.innerHTML = weekdays.map(day => `<div class="weekday">${day}</div>`).join("");
+    }
+
+    function renderCalendar() {
+      const year = state.currentMonth.getFullYear();
+      const month = state.currentMonth.getMonth();
+      elements.monthTitle.textContent = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(state.currentMonth);
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const firstWeekday = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+      const maxDate = addDays(state.today, CONFIG.maxDaysAhead);
+      const cells = [];
+
+      for (let i = 0; i < firstWeekday; i++) {
+        cells.push(`<button class="day disabled" type="button" disabled></button>`);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const disabled = date < state.today || date > maxDate;
+        const selected = state.selectedDate && sameDay(date, state.selectedDate);
+        cells.push(`
+          <button class="day ${disabled ? "disabled" : ""} ${selected ? "selected" : ""}" type="button" ${disabled ? "disabled" : ""} data-date="${toDateKey(date)}">
+            ${day}
+          </button>
+        `);
+      }
+
+      elements.calendarGrid.innerHTML = cells.join("");
+
+      [...elements.calendarGrid.querySelectorAll(".day:not(.disabled)")].forEach(button => {
+        button.addEventListener("click", () => selectDate(parseDateKey(button.getAttribute("data-date"))));
+      });
+
+      updateMonthButtons();
+    }
+
+    function updateMonthButtons() {
+      const currentMonthStart = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+      const todayMonthStart = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
+      elements.prevMonthBtn.disabled = currentMonthStart <= todayMonthStart;
+    }
+
+    function goToPreviousMonth() {
+      state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() - 1, 1);
+      renderCalendar();
+    }
+
+    function goToNextMonth() {
+      state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 1);
+      renderCalendar();
+    }
+
+    async function selectDate(date) {
+      state.selectedDate = date;
+      state.selectedSlot = null;
+      elements.selectedTimeText.textContent = "Not selected yet";
+      renderCalendar();
+      showTimePanel();
+      await loadAvailability(date);
+    }
+
+    async function loadAvailability(date) {
+      setNotice(elements.slotNotice, "info", "Loading available times...", true);
+      elements.slots.innerHTML = "";
+      const params = new URLSearchParams({
+        date: toDateKey(date),
+        timezone: state.timezone,
+        duration: String(CONFIG.durationMinutes),
+        eventType: CONFIG.eventType
+      });
+      elements.selectedDateText.textContent = `Selected date: ${formatDate(date)}`;
+
+      try {
+        const response = await fetch(`${CONFIG.availabilityEndpoint}?${params.toString()}`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Unable to load availability.");
+        state.slots = Array.isArray(data.slots) ? data.slots : [];
+        if (state.slots.length === 0) {
+          setNotice(elements.slotNotice, "info", "No available times on this date. Please choose another date.", true);
+          return;
+        }
+        setNotice(elements.slotNotice, "info", "", false);
+        renderSlots();
+      } catch (error) {
+        setNotice(elements.slotNotice, "error", error.message || "Could not load available times.", true);
+      }
+    }
+
+    function renderSlots() {
+      elements.slots.innerHTML = state.slots.map((slot, index) => {
+        const start = typeof slot === "string" ? slot : slot.start;
+        const label = typeof slot === "string" ? formatTime(start) : (slot.label || formatTime(start));
+        return `<button class="slot" type="button" data-index="${index}">${label}</button>`;
+      }).join("");
+
+      [...elements.slots.querySelectorAll(".slot")].forEach(button => {
+        button.addEventListener("click", () => selectSlot(state.slots[Number(button.getAttribute("data-index"))]));
+      });
+    }
+
+    function selectSlot(slot) {
+      const start = typeof slot === "string" ? slot : slot.start;
+      const end = typeof slot === "string" ? addMinutesIso(start, CONFIG.durationMinutes) : slot.end;
+      state.selectedSlot = { start, end };
+      [...elements.slots.querySelectorAll(".slot")].forEach(button => button.classList.remove("selected"));
+      const selectedIndex = state.slots.findIndex(item => (typeof item === "string" ? item : item.start) === start);
+      const selectedButton = elements.slots.querySelector(`[data-index="${selectedIndex}"]`);
+      if (selectedButton) selectedButton.classList.add("selected");
+      elements.selectedTimeText.textContent = `${formatDateTime(start)} (${state.timezone})`;
+      showDetailsPanel();
+    }
+
+    async function submitBooking(event) {
+      event.preventDefault();
+      if (!state.selectedDate || !state.selectedSlot) {
+        setNotice(elements.formNotice, "error", "Please choose a date and time first.", true);
+        return;
+      }
+
+      const formData = new FormData(elements.bookingForm);
+      const payload = {
+        eventType: CONFIG.eventType,
+        eventTitle: CONFIG.eventTitle,
+        durationMinutes: CONFIG.durationMinutes,
+        timezone: state.timezone,
+        start: state.selectedSlot.start,
+        end: state.selectedSlot.end,
+        name: clean(formData.get("name")),
+        email: clean(formData.get("email")),
+        contact: clean(formData.get("contact")),
+        studentLevel: clean(formData.get("studentLevel")),
+        goal: clean(formData.get("goal")),
+        notes: clean(formData.get("notes")),
+        source: "booking.html"
+      };
+
+      if (!payload.name || !payload.email) {
+        setNotice(elements.formNotice, "error", "Please enter your name and email.", true);
+        return;
+      }
+
+      elements.submitBtn.disabled = true;
+      elements.submitBtn.textContent = "Confirming...";
+      setNotice(elements.formNotice, "info", "Checking calendar and confirming your booking...", true);
+
+      try {
+        const response = await fetch(CONFIG.bookingEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || "This time may no longer be available. Please choose another time.");
+        setNotice(elements.formNotice, "success", "Your trial class has been booked successfully.", true);
+        const successParams = new URLSearchParams({ name: payload.name, time: payload.start, timezone: payload.timezone });
+        setTimeout(() => { window.location.href = `success.html?${successParams.toString()}`; }, 700);
+      } catch (error) {
+        setNotice(elements.formNotice, "error", error.message || "Booking failed. Please try again.", true);
+        elements.submitBtn.disabled = false;
+        elements.submitBtn.textContent = "Confirm Booking";
+      }
+    }
+
+    function showDatePanel() {
+      elements.datePanel.classList.remove("hidden");
+      elements.timePanel.classList.add("hidden");
+      elements.bookingForm.classList.add("hidden");
+      elements.stepDate.classList.add("active");
+      elements.stepTime.classList.remove("active");
+      elements.stepDetails.classList.remove("active");
+    }
+
+    function showTimePanel() {
+      elements.datePanel.classList.add("hidden");
+      elements.timePanel.classList.remove("hidden");
+      elements.bookingForm.classList.add("hidden");
+      elements.stepDate.classList.remove("active");
+      elements.stepTime.classList.add("active");
+      elements.stepDetails.classList.remove("active");
+    }
+
+    function showDetailsPanel() {
+      elements.datePanel.classList.add("hidden");
+      elements.timePanel.classList.add("hidden");
+      elements.bookingForm.classList.remove("hidden");
+      elements.stepDate.classList.remove("active");
+      elements.stepTime.classList.remove("active");
+      elements.stepDetails.classList.add("active");
+    }
+
+    function setNotice(element, type, message, visible) {
+      element.className = `notice ${type} ${visible ? "show" : ""}`;
+      element.textContent = message;
+    }
+
+    function clean(value) { return String(value || "").trim(); }
+    function startOfDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+    function addDays(date, days) { const result = new Date(date); result.setDate(result.getDate() + days); return result; }
+    function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+    function toDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
+    function parseDateKey(dateKey) { const [year, month, day] = dateKey.split("-").map(Number); return new Date(year, month - 1, day); }
+    function formatDate(date) { return new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(date); }
+    function formatTime(isoString) { return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
+    function formatDateTime(isoString) { return new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
+    function addMinutesIso(isoString, minutes) { const date = new Date(isoString); date.setMinutes(date.getMinutes() + minutes); return date.toISOString(); }
+  </script>
+</body>
+</html>

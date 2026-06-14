@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English with Becky</title>
+  <style>
+    :root {
+      --bg:#f8fafc;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#ec4899;
+      --primary2:#8b5cf6;
+      --border:#e5e7eb;
+      --white:#fff;
+      --shadow:0 16px 40px rgba(17,24,39,.08);
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      color:var(--text);
+    }
+
+    .container{
+      width:min(1080px,92%);
+      margin:0 auto;
+    }
+
+    .hero{
+      padding:26px 0 42px;
+    }
+
+    .hero-card{
+      display:grid;
+      grid-template-columns:.92fr 1.08fr;
+      gap:22px;
+      align-items:center;
+      background:white;
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .teacher-photo{
+      width:100%;
+      aspect-ratio:4/5;
+      border-radius:22px;
+      background:#e5e7eb;
+      object-fit:cover;
+      display:block;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fdf2f8;
+      color:#be185d;
+      font-weight:800;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    h1{
+      font-size:clamp(34px,5vw,58px);
+      line-height:1.03;
+      margin:0 0 14px;
+    }
+
+    .sub{
+      font-size:18px;
+      color:var(--muted);
+      margin-bottom:22px;
+      line-height:1.6;
+    }
+
+    .btns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px 20px;
+      border-radius:999px;
+      text-decoration:none;
+      font-weight:800;
+    }
+
+    .btn-primary{
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      color:white;
+    }
+
+    .btn-secondary{
+      background:white;
+      border:1px solid var(--border);
+      color:var(--text);
+    }
+
+    .mini-points{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .mini-points div{
+      background:#faf5ff;
+      border:1px solid #ede9fe;
+      border-radius:16px;
+      padding:12px;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .section{
+      padding:34px 0;
+    }
+
+    .title{
+      text-align:center;
+      font-size:32px;
+      margin:0 0 12px;
+    }
+
+    .desc{
+      text-align:center;
+      color:var(--muted);
+      max-width:720px;
+      margin:0 auto 22px;
+      line-height:1.7;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .card{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .card h3{
+      margin-top:0;
+      margin-bottom:10px;
+      font-size:22px;
+    }
+
+    .card p{
+      color:var(--muted);
+      line-height:1.7;
+      margin:0;
+    }
+
+    .cta{
+      background:linear-gradient(135deg,#111827 0%,#7c3aed 100%);
+      color:white;
+      border-radius:28px;
+      padding:30px;
+      box-shadow:0 18px 45px rgba(124,58,237,.24);
+    }
+
+    .cta p{
+      color:rgba(255,255,255,.88);
+      line-height:1.7;
+    }
+
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      padding:26px 0 40px;
+      font-size:14px;
+    }
+
+    @media (max-width:900px){
+      .hero-card,.grid-3{
+        grid-template-columns:1fr;
+      }
+
+      .btns{
+        flex-direction:column;
+      }
+
+      .btn{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero container">
+    <div class="hero-card">
+      <img class="teacher-photo" src="WechatIMG158.jpg" alt="Becky" />
+      <div>
+        <div class="pill">1-on-1 English Lessons · British Teacher · Online</div>
+        <h1>Speak Naturally, Learn with Confidence</h1>
+        <div class="sub">Personalised 1-on-1 English lessons for students and learners who want to improve speaking, interview skills, and everyday communication.</div>
+        <div class="btns">
+          <a class="btn btn-primary" href="booking.html">Book a Free Trial Class</a>
+          <a class="btn btn-secondary" href="english_level_testen.html">Take a Free English Level Test</a>
+        </div>
+        <div class="mini-points">
+          <div>British English teacher</div>
+          <div>Friendly and supportive style</div>
+          <div>Speaking, interview and daily English</div>
+          <div>Suitable for students and learners</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="title">What you can learn</h2>
+      <p class="desc">Each lesson is designed to help you speak more naturally, build confidence, and use English more effectively in real-life situations.</p>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Speaking English</h3>
+          <p>Build confidence in everyday conversations with practical speaking practice, useful vocabulary, and natural expressions.</p>
+        </div>
+        <div class="card">
+          <h3>Interview English</h3>
+          <p>Prepare for school or job interviews with clearer self-introductions, stronger answers, and more confident speaking.</p>
+        </div>
+        <div class="card">
+          <h3>Supportive Lessons</h3>
+          <p>Learn in a friendly and encouraging environment with lessons that are suitable for different levels and goals.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-3">
+        <div class="card">
+          <h3>Speaking Practice</h3>
+          <p>Develop stronger fluency through practical exercises, guided correction, and useful conversation topics.</p>
+        </div>
+        <div class="card">
+          <h3>Real-Life Communication</h3>
+          <p>Improve the English you need for daily life, travel, study, and communication with confidence.</p>
+        </div>
+        <div class="card">
+          <h3>Clear Progress</h3>
+          <p>Build your skills step by step with lessons that focus on speaking clearly and using English naturally.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container cta">
+      <h2 style="margin-top:0;font-size:32px;">Book a Free Trial Class</h2>
+      <p>Start with a trial lesson and take the next step towards more confident English communication.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="booking.html">Book a Free Trial Class</a>
+        <a class="btn btn-secondary" href="english_level_testen.html" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);color:white;">Take a Free English Level Test</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Online English lessons for students and learners worldwide</div>
+</body>
+</html>

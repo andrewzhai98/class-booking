@@ -1,0 +1,17 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  command = "npm run build"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/booking"
+  to = "/booking.html"
+  status = 200
+
+[[redirects]]
+  from = "/success"
+  to = "/success.html"
+  status = 200

@@ -1,57 +1,97 @@
-# Class Booking System
+# English Booking Site
 
-初版 — 核心功能实现。学生可在线预约课程，自动写入 Google 日历和表格。
+This is a lightweight Calendly-style booking website for English trial lessons.
 
-## 功能
+## What is included
 
-- 📅 按日期查看可预约时段
-- ✅ 选择时间并提交预约
-- 📧 自动发送确认邮件（通过 Google Calendar）
-- 📊 预约记录写入 Google Sheets
+- `index.html`: landing page
+- `booking.html`: booking calendar and booking form
+- `success.html`: booking confirmation page
+- `english_level_testen.html`: placeholder level-test page
+- `netlify/functions/availability.js`: reads Google Calendar busy time and returns available slots
+- `netlify/functions/book.js`: checks availability again, creates a Google Calendar event, and writes booking data to Google Sheets
+- `netlify.toml`: Netlify deployment config
+- `.env.example`: required environment variables
 
-## 技术栈
+## Google Sheet columns
 
-- 前端：纯 HTML / CSS / JS（无框架）
-- 后端：Netlify Functions (Node.js)
-- API：Google Calendar API + Google Sheets API
-- 部署：Netlify
+Create a Google Sheet tab named `Bookings` with these columns in row 1:
 
-## 本地开发
+1. Created At
+2. Booking ID
+3. Status
+4. Event Type
+5. Start Time
+6. End Time
+7. Timezone
+8. Name
+9. Email
+10. WeChat / WhatsApp
+11. English Level
+12. Learning Goal
+13. Notes
+14. Google Calendar Event ID
+15. Source
+
+## Required environment variables
+
+Set these in Netlify → Site configuration → Environment variables:
+
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_PRIVATE_KEY`
+- `GOOGLE_CALENDAR_ID`
+- `GOOGLE_SHEET_ID`
+- `GOOGLE_SHEET_TAB`
+- `TEACHER_EMAIL`
+- `TEACHER_TIMEZONE`
+- `WORK_DAYS`
+- `WORK_START`
+- `WORK_END`
+- `SLOT_DURATION_MINUTES`
+- `BUFFER_MINUTES`
+- `MEETING_LOCATION`
+
+## Important Google setup
+
+1. Create a Google Cloud service account.
+2. Enable Google Calendar API and Google Sheets API.
+3. Create a JSON key for the service account.
+4. Share your Google Calendar with the service account email and give it permission to make changes to events.
+5. Share your Google Sheet with the service account email and give it editor permission.
+6. Put the service account email into `GOOGLE_SERVICE_ACCOUNT_EMAIL`.
+7. Put the private key into `GOOGLE_PRIVATE_KEY`.
+
+For `GOOGLE_PRIVATE_KEY`, keep the line breaks as `\n` when adding it to Netlify.
+
+## Local development
 
 ```bash
-# 安装依赖
 npm install
-
-# 启动 Netlify 本地环境
-netlify dev
-```
-
-## 环境变量
-
-复制 `.env.example` 为 `.env`，填写实际值：
-
-```bash
 cp .env.example .env
+npm run dev
 ```
 
-在 Netlify 上部署时，需在 **Site Settings → Environment Variables** 中配置相同变量。
+## Deploy to Netlify
 
-## 目录结构
+Recommended workflow:
 
-```
-index.html              # 主页（课程介绍）
-booking.html           # 预约页面
-netlify/
-  functions/
-    availability.js    # 查询可预约时段
-    book.js            # 提交预约
-package.json
-netlify.toml          # Netlify 配置
-```
+1. Upload this folder to a GitHub repository.
+2. Connect the repository to Netlify.
+3. Set the build command to `npm run build`.
+4. Set the publish directory to `.`.
+5. Set the functions directory to `netlify/functions`.
+6. Add the environment variables.
+7. Deploy.
 
-## 状态
+## Booking flow
 
-当前为初版（MVP），核心预约流程可用。后续计划：
-- 学生端账号系统
-- 老师端管理界面
-- 邮件提醒优化
+1. Visitor opens `index.html`.
+2. Visitor clicks `Book a Free Trial Class`.
+3. `booking.html` detects the visitor's time zone.
+4. Visitor chooses a date.
+5. The frontend calls `/.netlify/functions/availability`.
+6. The function reads Google Calendar busy time and returns available slots.
+7. Visitor chooses a slot and submits details.
+8. The frontend calls `/.netlify/functions/book`.
+9. The function checks Google Calendar again, creates an event, and appends a row to Google Sheets.
+10. Visitor lands on `success.html`.

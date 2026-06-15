@@ -87,6 +87,49 @@
 
     .info-list { display:grid; gap:10px; margin-top:18px; }
 
+    .class-options {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin:14px 0 18px;
+    }
+
+    .class-option {
+      text-align:left;
+      border:1px solid var(--border);
+      background:white;
+      border-radius:18px;
+      padding:16px;
+      cursor:pointer;
+      font-family:inherit;
+      color:var(--text);
+    }
+
+    .class-option:hover {
+      border-color:#c4b5fd;
+      background:#faf5ff;
+    }
+
+    .class-option.selected {
+      border-color:transparent;
+      color:white;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+    }
+
+    .class-option strong {
+      display:block;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+
+    .class-option span {
+      display:block;
+      color:inherit;
+      opacity:.82;
+      font-size:13px;
+      line-height:1.5;
+    }
+
     .info-item {
       background:#faf5ff;
       border:1px solid #ede9fe;
@@ -279,7 +322,7 @@
     .hidden { display:none; }
 
     @media (max-width:900px) {
-      .layout, .steps { grid-template-columns:1fr; }
+      .layout, .steps, .class-options { grid-template-columns:1fr; }
       .topbar { align-items:flex-start; flex-direction:column; }
       .slots { grid-template-columns:1fr; }
     }
@@ -291,39 +334,57 @@
     <div class="container">
       <div class="topbar">
         <a class="back" href="index.html">← Back to home</a>
-        <span class="badge">Free Trial Class · Online · 30 minutes</span>
+        <span class="badge">Free Trial · Regular Lesson · Online</span>
       </div>
 
       <div class="layout">
         <section class="card">
           <span class="badge">Book your lesson</span>
-          <h1>Book a Free Trial Class</h1>
+          <h1>Book an English Lesson</h1>
           <p class="sub">
-            Choose a time that works for you. The booking system will check the teacher's calendar and show available time slots.
+            Choose a class type first, then pick a time that works for you. Regular lessons require lesson credits.
           </p>
 
           <div class="info-list">
-            <div class="info-item">Duration: 30 minutes</div>
-            <div class="info-item">Format: Online lesson</div>
+            <div class="info-item">Free Trial: 10 minutes · 0 credits</div>
+            <div class="info-item">Regular Lesson: 45 minutes · 1 credit</div>
             <div class="info-item">Time zone: automatically detected</div>
-            <div class="info-item">You will receive a confirmation after booking</div>
+            <div class="info-item">Regular lessons require a prepaid lesson package</div>
           </div>
         </section>
 
         <section class="card">
           <div class="steps">
-            <div id="stepDate" class="step active">1. Choose date</div>
-            <div id="stepTime" class="step">2. Choose time</div>
-            <div id="stepDetails" class="step">3. Your details</div>
+            <div id="stepClass" class="step active">1. Choose class</div>
+            <div id="stepDate" class="step">2. Choose date</div>
+            <div id="stepTime" class="step">3. Choose time</div>
+            <div id="stepDetails" class="step">4. Your details</div>
           </div>
 
           <div id="bookingSummary" class="summary">
-            <div><strong>Class:</strong> Free Trial Class</div>
-            <div><strong>Duration:</strong> 30 minutes</div>
+            <div><strong>Class:</strong> <span id="selectedClassText">Not selected yet</span></div>
+            <div><strong>Duration:</strong> <span id="selectedDurationText">Not selected yet</span></div>
+            <div><strong>Credits required:</strong> <span id="selectedCreditText">Not selected yet</span></div>
             <div><strong>Selected time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
           </div>
 
-          <div id="datePanel">
+          <div id="classPanel">
+            <h2>Choose your class</h2>
+            <p class="sub">Start with a short free trial, or book a regular lesson if you already have prepaid lesson credits.</p>
+            <div class="class-options">
+              <button class="class-option" type="button" data-class-type="free-trial">
+                <strong>Free Trial Class</strong>
+                <span>10 minutes · Free · One trial per email</span>
+              </button>
+              <button class="class-option" type="button" data-class-type="regular-lesson">
+                <strong>Regular Lesson</strong>
+                <span>45 minutes · 1 lesson credit required</span>
+              </button>
+            </div>
+            <div id="classNotice" class="notice info show">Please choose a class type to continue.</div>
+          </div>
+
+          <div id="datePanel" class="hidden">
             <div class="calendar-head">
               <div class="month-title" id="monthTitle"></div>
               <div class="month-actions">
@@ -419,17 +480,32 @@
 
   <script>
     const CONFIG = {
-      eventType: "free-trial-class",
-      eventTitle: "Free Trial English Class",
-      durationMinutes: 30,
       maxDaysAhead: 30,
       availabilityEndpoint: "/.netlify/functions/availability",
-      bookingEndpoint: "/.netlify/functions/book"
+      bookingEndpoint: "/.netlify/functions/book",
+      previewFallback: true,
+      classTypes: {
+        "free-trial": {
+          eventType: "free-trial",
+          eventTitle: "Free Trial English Class",
+          durationMinutes: 10,
+          creditCost: 0,
+          label: "Free Trial Class"
+        },
+        "regular-lesson": {
+          eventType: "regular-lesson",
+          eventTitle: "Regular English Lesson",
+          durationMinutes: 45,
+          creditCost: 1,
+          label: "Regular Lesson"
+        }
+      }
     };
 
     const state = {
       today: startOfDay(new Date()),
       currentMonth: new Date(),
+      selectedClass: null,
       selectedDate: null,
       selectedSlot: null,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -437,6 +513,7 @@
     };
 
     const elements = {
+      stepClass: document.getElementById("stepClass"),
       stepDate: document.getElementById("stepDate"),
       stepTime: document.getElementById("stepTime"),
       stepDetails: document.getElementById("stepDetails"),
@@ -446,9 +523,15 @@
       weekdayGrid: document.getElementById("weekdayGrid"),
       calendarGrid: document.getElementById("calendarGrid"),
       timezoneText: document.getElementById("timezoneText"),
+      classPanel: document.getElementById("classPanel"),
+      classNotice: document.getElementById("classNotice"),
+      classButtons: document.querySelectorAll(".class-option"),
       timePanel: document.getElementById("timePanel"),
       datePanel: document.getElementById("datePanel"),
       selectedDateText: document.getElementById("selectedDateText"),
+      selectedClassText: document.getElementById("selectedClassText"),
+      selectedDurationText: document.getElementById("selectedDurationText"),
+      selectedCreditText: document.getElementById("selectedCreditText"),
       selectedTimeText: document.getElementById("selectedTimeText"),
       slots: document.getElementById("slots"),
       slotNotice: document.getElementById("slotNotice"),
@@ -471,6 +554,9 @@
       elements.backToDateBtn.addEventListener("click", showDatePanel);
       elements.backToTimeBtn.addEventListener("click", showTimePanel);
       elements.bookingForm.addEventListener("submit", submitBooking);
+      elements.classButtons.forEach(button => {
+        button.addEventListener("click", () => selectClass(button.getAttribute("data-class-type")));
+      });
     }
 
     function renderWeekdays() {
@@ -530,6 +616,26 @@
       renderCalendar();
     }
 
+    function selectClass(classType) {
+      const selected = CONFIG.classTypes[classType];
+      if (!selected) return;
+
+      state.selectedClass = selected;
+      state.selectedDate = null;
+      state.selectedSlot = null;
+      state.slots = [];
+
+      elements.classButtons.forEach(button => {
+        button.classList.toggle("selected", button.getAttribute("data-class-type") === classType);
+      });
+
+      elements.selectedClassText.textContent = selected.label;
+      elements.selectedDurationText.textContent = `${selected.durationMinutes} minutes`;
+      elements.selectedCreditText.textContent = `${selected.creditCost} credit${selected.creditCost === 1 ? "" : "s"}`;
+      elements.selectedTimeText.textContent = "Not selected yet";
+      showDatePanel();
+    }
+
     async function selectDate(date) {
       state.selectedDate = date;
       state.selectedSlot = null;
@@ -545,8 +651,8 @@
       const params = new URLSearchParams({
         date: toDateKey(date),
         timezone: state.timezone,
-        duration: String(CONFIG.durationMinutes),
-        eventType: CONFIG.eventType
+        duration: String(state.selectedClass.durationMinutes),
+        eventType: state.selectedClass.eventType
       });
       elements.selectedDateText.textContent = `Selected date: ${formatDate(date)}`;
 
@@ -562,6 +668,13 @@
         setNotice(elements.slotNotice, "info", "", false);
         renderSlots();
       } catch (error) {
+        if (CONFIG.previewFallback && isLocalPreview()) {
+          state.slots = buildPreviewSlots(date);
+          setNotice(elements.slotNotice, "info", "Preview mode: these sample times are shown because Netlify Functions are not running locally.", true);
+          renderSlots();
+          return;
+        }
+
         setNotice(elements.slotNotice, "error", error.message || "Could not load available times.", true);
       }
     }
@@ -580,7 +693,7 @@
 
     function selectSlot(slot) {
       const start = typeof slot === "string" ? slot : slot.start;
-      const end = typeof slot === "string" ? addMinutesIso(start, CONFIG.durationMinutes) : slot.end;
+      const end = typeof slot === "string" ? addMinutesIso(start, state.selectedClass.durationMinutes) : slot.end;
       state.selectedSlot = { start, end };
       [...elements.slots.querySelectorAll(".slot")].forEach(button => button.classList.remove("selected"));
       const selectedIndex = state.slots.findIndex(item => (typeof item === "string" ? item : item.start) === start);
@@ -592,6 +705,11 @@
 
     async function submitBooking(event) {
       event.preventDefault();
+      if (!state.selectedClass) {
+        setNotice(elements.formNotice, "error", "Please choose a class type first.", true);
+        return;
+      }
+
       if (!state.selectedDate || !state.selectedSlot) {
         setNotice(elements.formNotice, "error", "Please choose a date and time first.", true);
         return;
@@ -599,9 +717,10 @@
 
       const formData = new FormData(elements.bookingForm);
       const payload = {
-        eventType: CONFIG.eventType,
-        eventTitle: CONFIG.eventTitle,
-        durationMinutes: CONFIG.durationMinutes,
+        eventType: state.selectedClass.eventType,
+        eventTitle: state.selectedClass.eventTitle,
+        durationMinutes: state.selectedClass.durationMinutes,
+        creditCost: state.selectedClass.creditCost,
         timezone: state.timezone,
         start: state.selectedSlot.start,
         end: state.selectedSlot.end,
@@ -630,7 +749,9 @@
           body: JSON.stringify(payload)
         });
         const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.message || "This time may no longer be available. Please choose another time.");
+        if (!response.ok) {
+          throw new Error(result.message || `Booking failed. HTTP status: ${response.status}. Please check the terminal logs.`);
+        }
         setNotice(elements.formNotice, "success", "Your trial class has been booked successfully.", true);
         const successParams = new URLSearchParams({ name: payload.name, time: payload.start, timezone: payload.timezone });
         setTimeout(() => { window.location.href = `success.html?${successParams.toString()}`; }, 700);
@@ -642,27 +763,33 @@
     }
 
     function showDatePanel() {
+      elements.classPanel.classList.add("hidden");
       elements.datePanel.classList.remove("hidden");
       elements.timePanel.classList.add("hidden");
       elements.bookingForm.classList.add("hidden");
+      elements.stepClass.classList.remove("active");
       elements.stepDate.classList.add("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.remove("active");
     }
 
     function showTimePanel() {
+      elements.classPanel.classList.add("hidden");
       elements.datePanel.classList.add("hidden");
       elements.timePanel.classList.remove("hidden");
       elements.bookingForm.classList.add("hidden");
+      elements.stepClass.classList.remove("active");
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.add("active");
       elements.stepDetails.classList.remove("active");
     }
 
     function showDetailsPanel() {
+      elements.classPanel.classList.add("hidden");
       elements.datePanel.classList.add("hidden");
       elements.timePanel.classList.add("hidden");
       elements.bookingForm.classList.remove("hidden");
+      elements.stepClass.classList.remove("active");
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.add("active");
@@ -674,6 +801,25 @@
     }
 
     function clean(value) { return String(value || "").trim(); }
+
+    function isLocalPreview() {
+      return window.location.protocol === "file:" || ["", "localhost", "127.0.0.1"].includes(window.location.hostname);
+    }
+
+    function buildPreviewSlots(date) {
+      const hours = [9, 10, 11, 14, 15, 16];
+      return hours.map(hour => {
+        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0, 0);
+        const end = new Date(start);
+        end.setMinutes(end.getMinutes() + state.selectedClass.durationMinutes);
+        return {
+          start: start.toISOString(),
+          end: end.toISOString(),
+          label: formatTime(start.toISOString())
+        };
+      });
+    }
+
     function startOfDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
     function addDays(date, days) { const result = new Date(date); result.setDate(result.getDate() + days); return result; }
     function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }

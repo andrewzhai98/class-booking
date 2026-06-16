@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Booking</title>
+  <style>
+    :root { --text:#111827; --muted:#6b7280; --primary:#ec4899; --primary2:#8b5cf6; --border:#e5e7eb; --danger:#dc2626; --success:#16a34a; --shadow:0 16px 40px rgba(17,24,39,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:24px; font-family:Inter,Arial,sans-serif; background:linear-gradient(180deg,#fff 0%,#f8fafc 100%); color:var(--text); }
+    .wrap { width:min(860px,100%); margin:0 auto; }
+    .card { background:white; border:1px solid var(--border); border-radius:28px; box-shadow:var(--shadow); padding:28px; margin:18px 0; }
+    .top { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+    .back { color:var(--muted); text-decoration:none; font-weight:800; }
+    .badge { display:inline-block; padding:8px 12px; border-radius:999px; background:#fdf2f8; color:#be185d; font-weight:900; font-size:13px; }
+    h1 { font-size:clamp(30px,5vw,44px); margin:12px 0; line-height:1.05; }
+    h2 { margin:0 0 12px; }
+    p { color:var(--muted); line-height:1.65; }
+    .summary { background:#f8fafc; border:1px solid var(--border); border-radius:18px; padding:16px; display:grid; gap:9px; }
+    .summary strong { color:var(--text); }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+    .btn { border:0; border-radius:999px; padding:13px 18px; font-weight:900; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-flex; justify-content:center; align-items:center; }
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
+    .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
+    .btn-danger { background:#fee2e2; color:#991b1b; }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .notice { border-radius:16px; padding:12px 14px; margin-top:14px; display:none; line-height:1.5; }
+    .notice.show { display:block; }
+    .notice.info { background:#eff6ff; color:#1d4ed8; }
+    .notice.error { background:#fef2f2; color:#b91c1c; }
+    .notice.success { background:#f0fdf4; color:#15803d; }
+    .field { display:grid; gap:8px; margin-top:14px; }
+    label { font-weight:900; }
+    input { width:100%; border:1px solid var(--border); border-radius:14px; padding:13px 14px; font:inherit; }
+    .slots { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+    .slot { border:1px solid var(--border); background:white; border-radius:14px; padding:12px; font-weight:900; cursor:pointer; }
+    .slot:hover { border-color:#c4b5fd; background:#faf5ff; }
+    .hidden { display:none; }
+    @media (max-width:640px) { .card { padding:22px; } .slots { grid-template-columns:1fr; } .btn { width:100%; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <a class="back" href="index.html">← Back to home</a>
+      <span class="badge">Manage booking</span>
+    </div>
+
+    <section class="card">
+      <span class="badge" id="statusBadge">Loading</span>
+      <h1>Your booking</h1>
+      <p id="introText">Loading your booking details...</p>
+      <div class="summary" id="summary"></div>
+      <div id="mainNotice" class="notice"></div>
+      <div class="actions" id="manageActions">
+        <button class="btn btn-primary" type="button" id="changeBtn">Change time</button>
+        <button class="btn btn-danger" type="button" id="cancelBtn">Cancel booking</button>
+      </div>
+    </section>
+
+    <section class="card hidden" id="changePanel">
+      <h2>Choose a new time</h2>
+      <p>Changes are allowed up to 12 hours before the lesson. Your credit will not be charged again when you change time.</p>
+      <div class="field">
+        <label for="newDate">New date</label>
+        <input id="newDate" type="date" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" type="button" id="loadSlotsBtn">Show available times</button>
+      </div>
+      <div id="slots" class="slots"></div>
+      <div id="changeNotice" class="notice"></div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("id") || "";
+    const token = params.get("token") || "";
+    const state = { booking: null, selectedSlot: null };
+    const els = {
+      statusBadge: document.getElementById("statusBadge"),
+      introText: document.getElementById("introText"),
+      summary: document.getElementById("summary"),
+      mainNotice: document.getElementById("mainNotice"),
+      manageActions: document.getElementById("manageActions"),
+      changeBtn: document.getElementById("changeBtn"),
+      cancelBtn: document.getElementById("cancelBtn"),
+      changePanel: document.getElementById("changePanel"),
+      newDate: document.getElementById("newDate"),
+      loadSlotsBtn: document.getElementById("loadSlotsBtn"),
+      slots: document.getElementById("slots"),
+      changeNotice: document.getElementById("changeNotice")
+    };
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    async function init() {
+      const today = new Date();
+      els.newDate.min = toDateInput(today);
+      const max = new Date(); max.setDate(max.getDate() + 30);
+      els.newDate.max = toDateInput(max);
+      els.changeBtn.addEventListener("click", () => els.changePanel.classList.toggle("hidden"));
+      els.cancelBtn.addEventListener("click", cancelBooking);
+      els.loadSlotsBtn.addEventListener("click", loadSlots);
+      await loadBooking();
+    }
+
+    async function loadBooking() {
+      if (!bookingId || !token) {
+        setNotice(els.mainNotice, "error", "Missing booking link details.", true);
+        els.manageActions.classList.add("hidden");
+        return;
+      }
+      try {
+        const res = await fetch(`/.netlify/functions/get-booking?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(token)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not load booking.");
+        state.booking = data.booking;
+        renderBooking(data.booking, data.canManage, data.cutoffHours);
+      } catch (error) {
+        setNotice(els.mainNotice, "error", error.message || "Could not load booking.", true);
+        els.manageActions.classList.add("hidden");
+      }
+    }
+
+    function renderBooking(booking, canManage, cutoffHours) {
+      els.statusBadge.textContent = booking.status;
+      if (booking.status === "cancelled") {
+        els.introText.textContent = "This booking has been cancelled. No further action is needed.";
+      } else if (booking.status === "completed") {
+        els.introText.textContent = "This lesson has been completed.";
+      } else if (canManage) {
+        els.introText.textContent = "You can change or cancel this booking online.";
+      } else {
+        els.introText.textContent = `This booking can no longer be changed online within ${cutoffHours} hours of the lesson. Please contact the teacher directly.`;
+      }
+      els.summary.innerHTML = `
+        <div><strong>Booking ID:</strong> ${escapeHtml(booking.bookingId)}</div>
+        <div><strong>Class:</strong> ${escapeHtml(booking.classTitle)}</div>
+        <div><strong>Name:</strong> ${escapeHtml(booking.name)}</div>
+        <div><strong>Email:</strong> ${escapeHtml(booking.email)}</div>
+        <div><strong>Time:</strong> ${formatRange(booking.startTime, booking.endTime)}</div>
+        <div><strong>Time zone:</strong> ${escapeHtml(booking.timezone)}</div>
+        <div><strong>Credits:</strong> ${booking.creditCost} credit${booking.creditCost === 1 ? "" : "s"}</div>
+      `;
+      els.manageActions.classList.toggle("hidden", !canManage || booking.status !== "confirmed");
+      if (!canManage) els.changePanel.classList.add("hidden");
+    }
+
+    async function loadSlots() {
+      const date = els.newDate.value;
+      if (!date) {
+        setNotice(els.changeNotice, "error", "Please choose a date first.", true);
+        return;
+      }
+      els.slots.innerHTML = "";
+      setNotice(els.changeNotice, "info", "Loading available times...", true);
+      try {
+        const q = new URLSearchParams({ date, timezone: state.booking.timezone, duration: String(state.booking.durationMinutes), eventType: state.booking.eventType });
+        const res = await fetch(`/.netlify/functions/availability?${q.toString()}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not load available times.");
+        const slots = Array.isArray(data.slots) ? data.slots : [];
+        if (!slots.length) {
+          setNotice(els.changeNotice, "info", "No available times on this date. Please choose another date.", true);
+          return;
+        }
+        setNotice(els.changeNotice, "info", "", false);
+        els.slots.innerHTML = slots.map((slot, index) => {
+          const start = typeof slot === "string" ? slot : slot.start;
+          const end = typeof slot === "string" ? addMinutesIso(start, state.booking.durationMinutes) : slot.end;
+          return `<button class="slot" type="button" data-index="${index}" data-start="${start}" data-end="${end}">${formatRange(start, end)}</button>`;
+        }).join("");
+        [...els.slots.querySelectorAll(".slot")].forEach(btn => btn.addEventListener("click", () => updateBooking(btn.dataset.start)));
+      } catch (error) {
+        setNotice(els.changeNotice, "error", error.message || "Could not load available times.", true);
+      }
+    }
+
+    async function updateBooking(start) {
+      if (!confirm("Change your booking to this new time?")) return;
+      setNotice(els.changeNotice, "info", "Updating your booking...", true);
+      try {
+        const res = await fetch("/.netlify/functions/update-booking", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId, token, start, timezone: state.booking.timezone })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not update booking.");
+        setNotice(els.changeNotice, "success", "Your booking has been updated.", true);
+        els.changePanel.classList.add("hidden");
+        await loadBooking();
+      } catch (error) {
+        setNotice(els.changeNotice, "error", error.message || "Could not update booking.", true);
+      }
+    }
+
+    async function cancelBooking() {
+      if (!confirm("Cancel this booking?")) return;
+      setNotice(els.mainNotice, "info", "Cancelling your booking...", true);
+      try {
+        const res = await fetch("/.netlify/functions/cancel-booking", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId, token })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not cancel booking.");
+        setNotice(els.mainNotice, "success", "Your booking has been cancelled.", true);
+        await loadBooking();
+      } catch (error) {
+        setNotice(els.mainNotice, "error", error.message || "Could not cancel booking.", true);
+      }
+    }
+
+    function setNotice(el, type, message, show) { el.className = `notice ${type}${show ? " show" : ""}`; el.textContent = message || ""; }
+    function toDateInput(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`; }
+    function formatTime(iso) { return new Intl.DateTimeFormat("en", { hour:"numeric", minute:"2-digit" }).format(new Date(iso)); }
+    function formatRange(start, end) { return `${new Intl.DateTimeFormat("en", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }).format(new Date(start))} - ${formatTime(end)}`; }
+    function addMinutesIso(iso, minutes) { const d = new Date(iso); d.setMinutes(d.getMinutes()+minutes); return d.toISOString(); }
+    function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
+  </script>
+</body>
+</html>

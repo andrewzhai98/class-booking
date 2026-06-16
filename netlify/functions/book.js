@@ -10,17 +10,19 @@ const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
 const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
 const TEACHER_EMAIL = process.env.TEACHER_EMAIL || "";
 const MEETING_LOCATION = process.env.MEETING_LOCATION || "Online";
-const BUFFER_MINUTES = Number(process.env.BUFFER_MINUTES || 0);
+const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
+const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const INVITE_ATTENDEES = process.env.INVITE_ATTENDEES === "true";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 const MAX_BOOKINGS_PER_DAY = Number(process.env.MAX_BOOKINGS_PER_DAY || 4);
 const MAX_ACTIVE_BOOKINGS_PER_EMAIL = Number(process.env.MAX_ACTIVE_BOOKINGS_PER_EMAIL || 2);
+const SITE_URL = process.env.SITE_URL || "";
 
 const CLASS_TYPES = {
   "free-trial": {
     eventType: "free-trial",
     title: "Free Trial English Class",
-    durationMinutes: Number(process.env.FREE_TRIAL_DURATION_MINUTES || 10),
+    durationMinutes: Number(process.env.FREE_TRIAL_DURATION_MINUTES || 15),
     creditCost: Number(process.env.FREE_TRIAL_CREDIT_COST || 0),
     requiresCredits: false
   },
@@ -80,8 +82,8 @@ exports.handler = async (event) => {
 
     const busyResponse = await calendar.freebusy.query({
       requestBody: {
-        timeMin: start.minus({ minutes: BUFFER_MINUTES }).toISO(),
-        timeMax: end.plus({ minutes: BUFFER_MINUTES }).toISO(),
+        timeMin: start.minus({ minutes: PRE_BUFFER_MINUTES }).toISO(),
+        timeMax: end.plus({ minutes: POST_BUFFER_MINUTES }).toISO(),
         timeZone: DEFAULT_TIMEZONE,
         items: [{ id: CALENDAR_ID }]
       }
@@ -93,7 +95,9 @@ exports.handler = async (event) => {
     }
 
     const bookingId = createBookingId();
-    const description = buildDescription(payload, bookingId, classConfig);
+    const manageToken = createManageToken();
+    const manageLink = buildManageLink(payload, bookingId, manageToken);
+    const description = buildDescription(payload, bookingId, classConfig, manageToken, manageLink);
 
     const eventRequestBody = {
       summary: classConfig.title,
@@ -124,6 +128,8 @@ exports.handler = async (event) => {
     if (SHEET_ID) {
       await appendBookingToSheet(sheets, {
         bookingId,
+        manageToken,
+        manageLink,
         payload,
         classConfig,
         start,
@@ -148,7 +154,16 @@ exports.handler = async (event) => {
     return json(200, {
       ok: true,
       bookingId,
+      manageToken,
+      manageLink,
       calendarEventId,
+      classType: classConfig.eventType,
+      classTitle: classConfig.title,
+      durationMinutes: classConfig.durationMinutes,
+      creditCost: classConfig.creditCost,
+      start: start.toISO(),
+      end: end.toISO(),
+      timezone: payload.timezone,
       message: "Booking confirmed."
     });
   } catch (error) {
@@ -188,7 +203,7 @@ function getClassConfig(eventType) {
 async function getExistingBookings(sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_TAB}!A:O`
+    range: `${SHEET_TAB}!A:S`
   });
 
   const rows = response.data.values || [];
@@ -207,7 +222,11 @@ async function getExistingBookings(sheets) {
     goal: row[11] || "",
     notes: row[12] || "",
     calendarEventId: row[13] || "",
-    source: row[14] || ""
+    source: row[14] || "",
+    manageToken: row[15] || "",
+    manageLink: row[16] || "",
+    updatedAt: row[17] || "",
+    changeCount: toNumber(row[18])
   }));
 }
 
@@ -313,7 +332,7 @@ async function deductStudentCredits(sheets, student, creditCost, fallbackName) {
   return updatedBalance;
 }
 
-async function appendBookingToSheet(sheets, { bookingId, payload, classConfig, start, end, calendarEventId, status }) {
+async function appendBookingToSheet(sheets, { bookingId, manageToken, manageLink, payload, classConfig, start, end, calendarEventId, status }) {
   const values = [[
     new Date().toISOString(),
     bookingId,
@@ -329,12 +348,16 @@ async function appendBookingToSheet(sheets, { bookingId, payload, classConfig, s
     payload.goal || "",
     payload.notes || "",
     calendarEventId,
-    payload.source || "booking.html"
+    payload.source || "booking.html",
+    manageToken,
+    manageLink,
+    "",
+    0
   ]];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_TAB}!A:O`,
+    range: `${SHEET_TAB}!A:S`,
     valueInputOption: "USER_ENTERED",
     insertDataOption: "INSERT_ROWS",
     requestBody: { values }
@@ -362,9 +385,11 @@ async function appendCreditTransaction(sheets, { email, type, amount, balanceAft
   });
 }
 
-function buildDescription(payload, bookingId, classConfig) {
+function buildDescription(payload, bookingId, classConfig, manageToken, manageLink) {
   return [
     `Booking ID: ${bookingId}`,
+    `Manage token: ${manageToken}`,
+    `Manage link: ${manageLink}`,
     `Class type: ${classConfig.title}`,
     `Duration: ${classConfig.durationMinutes} minutes`,
     `Credit cost: ${classConfig.creditCost}`,
@@ -425,6 +450,16 @@ function createBookingId() {
 
 function createTransactionId() {
   return `TX-${Date.now()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+}
+
+function createManageToken() {
+  return crypto.randomBytes(18).toString("hex");
+}
+
+function buildManageLink(payload, bookingId, manageToken) {
+  const baseUrl = String(SITE_URL || payload.siteUrl || "").replace(/\/$/, "");
+  if (!baseUrl) return `manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
+  return `${baseUrl}/manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
 }
 
 function json(statusCode, body) {

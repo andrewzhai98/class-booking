@@ -32,6 +32,10 @@ Create a Google Sheet tab named `Bookings` with these columns in row 1:
 13. Notes
 14. Google Calendar Event ID
 15. Source
+16. Manage Token
+17. Manage Link
+18. Updated At
+19. Change Count
 
 ## Required environment variables
 
@@ -48,8 +52,10 @@ Set these in Netlify → Site configuration → Environment variables:
 - `WORK_START`
 - `WORK_END`
 - `SLOT_DURATION_MINUTES`
-- `BUFFER_MINUTES`
+- `PRE_BUFFER_MINUTES`
+- `POST_BUFFER_MINUTES`
 - `MEETING_LOCATION`
+- `SITE_URL`
 
 ## Important Google setup
 
@@ -94,4 +100,5 @@ Recommended workflow:
 7. Visitor chooses a slot and submits details.
 8. The frontend calls `/.netlify/functions/book`.
 9. The function checks Google Calendar again, creates an event, and appends a row to Google Sheets.
-10. Visitor lands on `success.html`.
+10. Visitor lands on `success.html` and can open `manage-booking.html` through a private booking management link.
+11. If the lesson is more than `MIN_LEAD_HOURS` away, the visitor can change time or cancel online.

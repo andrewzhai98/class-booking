@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Book a Free Trial Class</title>
+  <title>Book an English Lesson</title>
   <style>
     :root {
       --bg:#f8fafc;
@@ -129,6 +129,48 @@
       font-size:13px;
       line-height:1.5;
     }
+
+    .class-meta {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .class-pill {
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:6px 9px;
+      background:#f3e8ff;
+      color:#5b21b6;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .class-option.selected .class-pill {
+      background:rgba(255,255,255,.2);
+      color:white;
+    }
+
+    .summary-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .link-btn {
+      border:0;
+      background:transparent;
+      color:#7c3aed;
+      font-weight:900;
+      cursor:pointer;
+      font-family:inherit;
+      padding:4px 0;
+    }
+
+    .link-btn:hover { text-decoration:underline; }
 
     .info-item {
       background:#faf5ff;
@@ -346,7 +388,7 @@
           </p>
 
           <div class="info-list">
-            <div class="info-item">Free Trial: 10 minutes · 0 credits</div>
+            <div class="info-item">Free Trial: 15 minutes · 0 credits</div>
             <div class="info-item">Regular Lesson: 45 minutes · 1 credit</div>
             <div class="info-item">Time zone: automatically detected</div>
             <div class="info-item">Regular lessons require a prepaid lesson package</div>
@@ -357,15 +399,21 @@
           <div class="steps">
             <div id="stepClass" class="step active">1. Choose class</div>
             <div id="stepDate" class="step">2. Choose date</div>
-            <div id="stepTime" class="step">3. Choose time</div>
+            <div id="stepTime" class="step">3. Choose start time</div>
             <div id="stepDetails" class="step">4. Your details</div>
           </div>
 
           <div id="bookingSummary" class="summary">
-            <div><strong>Class:</strong> <span id="selectedClassText">Not selected yet</span></div>
+            <div class="summary-row">
+              <div><strong>Class:</strong> <span id="selectedClassText">Not selected yet</span></div>
+              <button class="link-btn hidden" type="button" id="changeClassBtn">Change</button>
+            </div>
             <div><strong>Duration:</strong> <span id="selectedDurationText">Not selected yet</span></div>
             <div><strong>Credits required:</strong> <span id="selectedCreditText">Not selected yet</span></div>
-            <div><strong>Selected time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
+            <div class="summary-row">
+              <div><strong>Selected time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
+              <button class="link-btn hidden" type="button" id="changeTimeBtn">Change</button>
+            </div>
           </div>
 
           <div id="classPanel">
@@ -374,11 +422,21 @@
             <div class="class-options">
               <button class="class-option" type="button" data-class-type="free-trial">
                 <strong>Free Trial Class</strong>
-                <span>10 minutes · Free · One trial per email</span>
+                <span>Best for new students who want to meet the teacher first.</span>
+                <div class="class-meta">
+                  <span class="class-pill">15 min</span>
+                  <span class="class-pill">Free</span>
+                  <span class="class-pill">One trial per email</span>
+                </div>
               </button>
               <button class="class-option" type="button" data-class-type="regular-lesson">
                 <strong>Regular Lesson</strong>
-                <span>45 minutes · 1 lesson credit required</span>
+                <span>For students who already have prepaid lesson credits.</span>
+                <div class="class-meta">
+                  <span class="class-pill">45 min</span>
+                  <span class="class-pill">1 credit</span>
+                  <span class="class-pill">Prepaid package</span>
+                </div>
               </button>
             </div>
             <div id="classNotice" class="notice info show">Please choose a class type to continue.</div>
@@ -488,7 +546,7 @@
         "free-trial": {
           eventType: "free-trial",
           eventTitle: "Free Trial English Class",
-          durationMinutes: 10,
+          durationMinutes: 15,
           creditCost: 0,
           label: "Free Trial Class"
         },
@@ -539,7 +597,9 @@
       formNotice: document.getElementById("formNotice"),
       submitBtn: document.getElementById("submitBtn"),
       backToDateBtn: document.getElementById("backToDateBtn"),
-      backToTimeBtn: document.getElementById("backToTimeBtn")
+      backToTimeBtn: document.getElementById("backToTimeBtn"),
+      changeClassBtn: document.getElementById("changeClassBtn"),
+      changeTimeBtn: document.getElementById("changeTimeBtn")
     };
 
     document.addEventListener("DOMContentLoaded", init);
@@ -553,6 +613,8 @@
       elements.nextMonthBtn.addEventListener("click", goToNextMonth);
       elements.backToDateBtn.addEventListener("click", showDatePanel);
       elements.backToTimeBtn.addEventListener("click", showTimePanel);
+      elements.changeClassBtn.addEventListener("click", showClassPanel);
+      elements.changeTimeBtn.addEventListener("click", showTimePanel);
       elements.bookingForm.addEventListener("submit", submitBooking);
       elements.classButtons.forEach(button => {
         button.addEventListener("click", () => selectClass(button.getAttribute("data-class-type")));
@@ -699,7 +761,7 @@
       const selectedIndex = state.slots.findIndex(item => (typeof item === "string" ? item : item.start) === start);
       const selectedButton = elements.slots.querySelector(`[data-index="${selectedIndex}"]`);
       if (selectedButton) selectedButton.classList.add("selected");
-      elements.selectedTimeText.textContent = `${formatDateTime(start)} (${state.timezone})`;
+      elements.selectedTimeText.textContent = `${formatDateTimeRange(start, end)} (${state.timezone})`;
       showDetailsPanel();
     }
 
@@ -721,6 +783,7 @@
         eventTitle: state.selectedClass.eventTitle,
         durationMinutes: state.selectedClass.durationMinutes,
         creditCost: state.selectedClass.creditCost,
+        siteUrl: window.location.origin,
         timezone: state.timezone,
         start: state.selectedSlot.start,
         end: state.selectedSlot.end,
@@ -752,14 +815,38 @@
         if (!response.ok) {
           throw new Error(result.message || `Booking failed. HTTP status: ${response.status}. Please check the terminal logs.`);
         }
-        setNotice(elements.formNotice, "success", "Your trial class has been booked successfully.", true);
-        const successParams = new URLSearchParams({ name: payload.name, time: payload.start, timezone: payload.timezone });
+        setNotice(elements.formNotice, "success", "Your booking has been confirmed.", true);
+        const successParams = new URLSearchParams({
+          name: payload.name,
+          bookingId: result.bookingId || "",
+          manageToken: result.manageToken || "",
+          manageLink: result.manageLink || "",
+          classTitle: result.classTitle || state.selectedClass.label,
+          duration: String(result.durationMinutes || state.selectedClass.durationMinutes),
+          creditCost: String(result.creditCost ?? state.selectedClass.creditCost),
+          time: result.start || payload.start,
+          end: result.end || payload.end,
+          timezone: result.timezone || payload.timezone
+        });
         setTimeout(() => { window.location.href = `success.html?${successParams.toString()}`; }, 700);
       } catch (error) {
         setNotice(elements.formNotice, "error", error.message || "Booking failed. Please try again.", true);
         elements.submitBtn.disabled = false;
         elements.submitBtn.textContent = "Confirm Booking";
       }
+    }
+
+    function showClassPanel() {
+      elements.classPanel.classList.remove("hidden");
+      elements.datePanel.classList.add("hidden");
+      elements.timePanel.classList.add("hidden");
+      elements.bookingForm.classList.add("hidden");
+      elements.stepClass.classList.add("active");
+      elements.stepDate.classList.remove("active");
+      elements.stepTime.classList.remove("active");
+      elements.stepDetails.classList.remove("active");
+      elements.changeClassBtn.classList.add("hidden");
+      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showDatePanel() {
@@ -771,6 +858,8 @@
       elements.stepDate.classList.add("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.remove("active");
+      elements.changeClassBtn.classList.remove("hidden");
+      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showTimePanel() {
@@ -782,6 +871,8 @@
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.add("active");
       elements.stepDetails.classList.remove("active");
+      elements.changeClassBtn.classList.remove("hidden");
+      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showDetailsPanel() {
@@ -793,6 +884,8 @@
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.add("active");
+      elements.changeClassBtn.classList.remove("hidden");
+      elements.changeTimeBtn.classList.remove("hidden");
     }
 
     function setNotice(element, type, message, visible) {
@@ -828,6 +921,7 @@
     function formatDate(date) { return new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(date); }
     function formatTime(isoString) { return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
     function formatDateTime(isoString) { return new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
+    function formatDateTimeRange(startIso, endIso) { return `${formatDateTime(startIso)} - ${formatTime(endIso)}`; }
     function addMinutesIso(isoString, minutes) { const date = new Date(isoString); date.setMinutes(date.getMinutes() + minutes); return date.toISOString(); }
   </script>
 </body>

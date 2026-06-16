@@ -3,30 +3,222 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>English Level Test</title>
+  <title>Free English Level Test | English with Becky</title>
   <style>
-    body {
+    :root {
+      --bg:#f8fafc;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#ec4899;
+      --primary2:#8b5cf6;
+      --border:#e5e7eb;
+      --soft:#fdf2f8;
+      --soft2:#faf5ff;
+      --white:#fff;
+      --shadow:0 16px 40px rgba(17,24,39,.08);
+      --shadow2:0 18px 45px rgba(124,58,237,.18);
+      --danger:#dc2626;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
       margin:0;
       font-family:Inter,Arial,sans-serif;
       background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
-      color:#111827;
+      color:var(--text);
       min-height:100vh;
+    }
+
+    .container{width:min(980px,92%);margin:0 auto;}
+
+    .topbar{
+      padding:22px 0 10px;
       display:flex;
       align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:var(--text);
+      text-decoration:none;
+    }
+
+    .nav-link{
+      color:var(--muted);
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .hero{padding:22px 0 18px;text-align:center;}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
       justify-content:center;
-      padding:24px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:var(--soft);
+      color:#be185d;
+      font-weight:900;
+      font-size:13px;
+      margin-bottom:14px;
     }
-    .card {
-      width:min(720px,100%);
-      background:white;
-      border:1px solid #e5e7eb;
+
+    h1{
+      font-size:clamp(34px,5vw,56px);
+      line-height:1.04;
+      margin:0 0 14px;
+      letter-spacing:-.04em;
+    }
+
+    .sub{
+      max-width:760px;
+      margin:0 auto;
+      font-size:18px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .layout{
+      display:block;
+      max-width:880px;
+      padding:20px 0 42px;
+    }
+
+    .card{
+      background:var(--white);
+      border:1px solid var(--border);
       border-radius:28px;
-      padding:30px;
-      box-shadow:0 16px 40px rgba(17,24,39,.08);
+      padding:26px;
+      box-shadow:var(--shadow);
     }
-    h1 { margin:0 0 12px; font-size:42px; line-height:1.05; }
-    p { color:#6b7280; line-height:1.7; font-size:17px; }
-    .btn {
+
+    .test-intro{
+      margin-bottom:22px;
+      padding-bottom:22px;
+      border-bottom:1px solid var(--border);
+    }
+
+    .intro-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:14px;
+    }
+
+    .intro-head h2{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-.03em;
+    }
+
+    .intro-head p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+      max-width:300px;
+    }
+
+    .intro-list{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+
+    .intro-list li{
+      padding:14px;
+      border-radius:18px;
+      background:#f9fafb;
+      border:1px solid #eef2f7;
+      color:#4b5563;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .progress-wrap{margin-bottom:18px;}
+
+    .progress-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .progress{
+      height:10px;
+      background:#f3f4f6;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .progress-bar{
+      width:0%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      transition:width .2s ease;
+    }
+
+    .question{
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:20px;
+      margin-bottom:14px;
+      background:#fff;
+    }
+
+    .question h2{font-size:18px;line-height:1.45;margin:0 0 14px;}
+
+    .question-number{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      margin-right:8px;
+      background:var(--soft2);
+      color:#7c3aed;
+      font-size:13px;
+      font-weight:900;
+      vertical-align:middle;
+    }
+
+    .options{display:grid;gap:10px;}
+
+    .option{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:12px 14px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      cursor:pointer;
+      color:#374151;
+      line-height:1.45;
+      transition:.15s ease;
+    }
+
+    .option:hover{border-color:#d8b4fe;background:#faf5ff;}
+    .option input{margin-top:3px;accent-color:#8b5cf6;}
+
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;}
+
+    .btn{
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -34,17 +226,204 @@
       border-radius:999px;
       text-decoration:none;
       font-weight:900;
-      background:linear-gradient(90deg,#ec4899,#8b5cf6);
+      border:0;
+      cursor:pointer;
+      font-size:15px;
+      min-height:48px;
+    }
+
+    .btn-primary{
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
       color:white;
-      margin-top:12px;
+      box-shadow:0 12px 28px rgba(236,72,153,.18);
+    }
+
+    .btn-secondary{background:white;border:1px solid var(--border);color:var(--text);}
+    .btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;}
+
+    .note{color:var(--muted);font-size:14px;line-height:1.6;margin:12px 0 0;}
+
+    .result{
+      display:none;
+      margin-top:18px;
+      border-radius:24px;
+      padding:24px;
+      background:linear-gradient(135deg,#111827 0%,#7c3aed 100%);
+      color:white;
+      box-shadow:var(--shadow2);
+    }
+
+    .result.show{display:block;}
+
+    .result .eyebrow{
+      color:rgba(255,255,255,.72);
+      font-size:13px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
+    }
+
+    .result h2{margin:0 0 10px;font-size:32px;letter-spacing:-.03em;}
+    .result p{color:rgba(255,255,255,.86);line-height:1.7;margin:0 0 16px;}
+    .result .btn-secondary{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:white;}
+
+    .error{display:none;margin-top:12px;color:var(--danger);font-weight:800;font-size:14px;}
+    .error.show{display:block;}
+
+    .footer{text-align:center;color:var(--muted);padding:0 0 34px;font-size:14px;}
+
+    @media (max-width:900px){
+      .layout{max-width:92%;}
+      .intro-head{display:block;}
+      .intro-head p{max-width:none;margin-top:8px;}
+      .intro-list{grid-template-columns:1fr;}
+      .actions{flex-direction:column;}
+      .btn{width:100%;}
+      .topbar{align-items:flex-start;}
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>English Level Test</h1>
-    <p>This is a placeholder page. Replace this file with your existing English level test page if you already have one.</p>
-    <a class="btn" href="index.html">Back to home</a>
+  <header class="container topbar">
+    <a class="brand" href="index.html">English with Becky</a>
+    <a class="nav-link" href="booking.html">Book a lesson</a>
+  </header>
+
+  <main>
+    <section class="container hero">
+      <div class="pill">Free English Level Test · 3 minutes</div>
+      <h1>Find your English level</h1>
+      <p class="sub">Answer a few quick questions to get a simple level estimate and a suggested next step for your English learning.</p>
+    </section>
+
+    <section class="container layout">
+      <div class="card">
+        <section class="test-intro">
+          <div class="intro-head">
+            <h2>What this test does</h2>
+            <p>Answer without using a dictionary for a more realistic result.</p>
+          </div>
+          <ul class="intro-list">
+            <li>Gives a quick estimate of your grammar and vocabulary level.</li>
+            <li>Helps you choose a better starting point for 1-on-1 lessons.</li>
+            <li>It is not an official exam result. A teacher can check your speaking level more accurately in class.</li>
+          </ul>
+        </section>
+
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span id="answeredText">0 of 12 answered</span>
+            <span id="progressText">0%</span>
+          </div>
+          <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+
+        <form id="levelTestForm">
+          <div class="question"><h2><span class="question-number">1</span>Choose the correct sentence.</h2><div class="options"><label class="option"><input type="radio" name="q1" value="0"> She go to school every day.</label><label class="option"><input type="radio" name="q1" value="1"> She goes to school every day.</label><label class="option"><input type="radio" name="q1" value="0"> She going to school every day.</label></div></div>
+          <div class="question"><h2><span class="question-number">2</span>Complete the sentence: I have lived in London ___ 2020.</h2><div class="options"><label class="option"><input type="radio" name="q2" value="0"> for</label><label class="option"><input type="radio" name="q2" value="1"> since</label><label class="option"><input type="radio" name="q2" value="0"> during</label></div></div>
+          <div class="question"><h2><span class="question-number">3</span>Which word is closest in meaning to “improve”?</h2><div class="options"><label class="option"><input type="radio" name="q3" value="1"> get better</label><label class="option"><input type="radio" name="q3" value="0"> become smaller</label><label class="option"><input type="radio" name="q3" value="0"> forget</label></div></div>
+          <div class="question"><h2><span class="question-number">4</span>Choose the best question.</h2><div class="options"><label class="option"><input type="radio" name="q4" value="0"> Where you are from?</label><label class="option"><input type="radio" name="q4" value="0"> Where from are you?</label><label class="option"><input type="radio" name="q4" value="1"> Where are you from?</label></div></div>
+          <div class="question"><h2><span class="question-number">5</span>Complete the sentence: If I ___ more time, I would practise speaking every day.</h2><div class="options"><label class="option"><input type="radio" name="q5" value="0"> have</label><label class="option"><input type="radio" name="q5" value="1"> had</label><label class="option"><input type="radio" name="q5" value="0"> will have</label></div></div>
+          <div class="question"><h2><span class="question-number">6</span>Choose the most natural response: “Thank you for your help.”</h2><div class="options"><label class="option"><input type="radio" name="q6" value="1"> You're welcome.</label><label class="option"><input type="radio" name="q6" value="0"> Yes, I am.</label><label class="option"><input type="radio" name="q6" value="0"> I don't know.</label></div></div>
+          <div class="question"><h2><span class="question-number">7</span>Choose the correct phrase.</h2><div class="options"><label class="option"><input type="radio" name="q7" value="0"> I am interested to English.</label><label class="option"><input type="radio" name="q7" value="1"> I am interested in English.</label><label class="option"><input type="radio" name="q7" value="0"> I am interesting in English.</label></div></div>
+          <div class="question"><h2><span class="question-number">8</span>Complete the sentence: By the time I arrived, the class ___ already started.</h2><div class="options"><label class="option"><input type="radio" name="q8" value="0"> has</label><label class="option"><input type="radio" name="q8" value="1"> had</label><label class="option"><input type="radio" name="q8" value="0"> is</label></div></div>
+          <div class="question"><h2><span class="question-number">9</span>Which sentence sounds most natural?</h2><div class="options"><label class="option"><input type="radio" name="q9" value="0"> I very like English.</label><label class="option"><input type="radio" name="q9" value="0"> I like very English.</label><label class="option"><input type="radio" name="q9" value="1"> I really like English.</label></div></div>
+          <div class="question"><h2><span class="question-number">10</span>Choose the best word: She gave a very ___ explanation.</h2><div class="options"><label class="option"><input type="radio" name="q10" value="1"> clear</label><label class="option"><input type="radio" name="q10" value="0"> clearly</label><label class="option"><input type="radio" name="q10" value="0"> clarity</label></div></div>
+          <div class="question"><h2><span class="question-number">11</span>Complete the sentence: I look forward to ___ from you.</h2><div class="options"><label class="option"><input type="radio" name="q11" value="0"> hear</label><label class="option"><input type="radio" name="q11" value="1"> hearing</label><label class="option"><input type="radio" name="q11" value="0"> heard</label></div></div>
+          <div class="question"><h2><span class="question-number">12</span>Choose the sentence with the most natural meaning.</h2><div class="options"><label class="option"><input type="radio" name="q12" value="0"> Despite it was raining, we went out.</label><label class="option"><input type="radio" name="q12" value="1"> Although it was raining, we went out.</label><label class="option"><input type="radio" name="q12" value="0"> Although raining, we went out it.</label></div></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">See my result</button>
+            <button class="btn btn-secondary" type="button" id="resetBtn">Reset test</button>
+          </div>
+          <div class="error" id="errorText">Please answer all questions before seeing your result.</div>
+        </form>
+
+        <section class="result" id="resultBox" aria-live="polite">
+          <div class="eyebrow">Your estimated level</div>
+          <h2 id="levelText">A2 Elementary</h2>
+          <p id="resultText">You can understand and use simple English, but you may need more speaking practice to sound natural and confident.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="booking.html">Book a lesson</a>
+            <a class="btn btn-secondary" href="index.html">Back to home</a>
+          </div>
+        </section>
+      </div>    </section>
   </main>
+
+  <div class="footer">Online English lessons for students and learners worldwide</div>
+
+  <script>
+    const totalQuestions = 12;
+    const form = document.getElementById("levelTestForm");
+    const answeredText = document.getElementById("answeredText");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+    const errorText = document.getElementById("errorText");
+    const resultBox = document.getElementById("resultBox");
+    const levelText = document.getElementById("levelText");
+    const resultText = document.getElementById("resultText");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function getAnsweredCount() {
+      let answered = 0;
+      for (let i = 1; i <= totalQuestions; i += 1) {
+        if (form.querySelector(`input[name="q${i}"]:checked`)) answered += 1;
+      }
+      return answered;
+    }
+
+    function updateProgress() {
+      const answered = getAnsweredCount();
+      const percent = Math.round((answered / totalQuestions) * 100);
+      answeredText.textContent = `${answered} of ${totalQuestions} answered`;
+      progressText.textContent = `${percent}%`;
+      progressBar.style.width = `${percent}%`;
+      if (answered === totalQuestions) errorText.classList.remove("show");
+    }
+
+    function getResult(score) {
+      if (score <= 3) return { level:"A1 Beginner", text:"You can understand some basic English. Your next step is to build simple sentences, core vocabulary, and confidence in short conversations." };
+      if (score <= 6) return { level:"A2 Elementary", text:"You can use simple English in familiar situations. Your next step is to improve sentence accuracy and practise speaking more naturally." };
+      if (score <= 9) return { level:"B1 Intermediate", text:"You have a useful foundation and can understand many everyday topics. Your next step is to improve fluency, expand vocabulary, and reduce repeated mistakes." };
+      if (score <= 11) return { level:"B2 Upper-Intermediate", text:"You can handle more detailed English. Your next step is to speak with more precision, confidence, and natural expression in real conversations." };
+      return { level:"C1 Advanced", text:"You have strong English knowledge. Your next step is to polish natural phrasing, advanced vocabulary, and confident communication for specific goals." };
+    }
+
+    form.addEventListener("change", updateProgress);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const answered = getAnsweredCount();
+      if (answered < totalQuestions) {
+        errorText.classList.add("show");
+        resultBox.classList.remove("show");
+        return;
+      }
+
+      let score = 0;
+      for (let i = 1; i <= totalQuestions; i += 1) {
+        const selected = form.querySelector(`input[name="q${i}"]:checked`);
+        score += Number(selected.value || 0);
+      }
+
+      const result = getResult(score);
+      levelText.textContent = `${result.level} · ${score}/${totalQuestions}`;
+      resultText.textContent = result.text;
+      resultBox.classList.add("show");
+      resultBox.scrollIntoView({ behavior:"smooth", block:"center" });
+    });
+
+    resetBtn.addEventListener("click", () => {
+      form.reset();
+      errorText.classList.remove("show");
+      resultBox.classList.remove("show");
+      updateProgress();
+      window.scrollTo({ top:0, behavior:"smooth" });
+    });
+
+    updateProgress();
+  </script>
 </body>
 </html>

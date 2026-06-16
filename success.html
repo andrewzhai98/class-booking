@@ -11,7 +11,9 @@
       --primary:#ec4899;
       --primary2:#8b5cf6;
       --border:#e5e7eb;
-      --shadow:0 16px 40px rgba(17,24,39,.08);
+      --soft:#f8fafc;
+      --success:#16a34a;
+      --shadow:0 24px 70px rgba(17,24,39,.12);
     }
 
     * { box-sizing:border-box; }
@@ -22,124 +24,336 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:24px;
+      padding:28px;
       font-family:Inter,Arial,sans-serif;
-      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
       color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(236,72,153,.16), transparent 32%),
+        radial-gradient(circle at top right, rgba(139,92,246,.18), transparent 30%),
+        linear-gradient(180deg,#fff 0%,#f8fafc 100%);
     }
 
-    .card {
+    .shell {
       width:min(680px,100%);
-      background:white;
-      border:1px solid var(--border);
-      border-radius:28px;
-      padding:32px;
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(229,231,235,.9);
+      border-radius:32px;
       box-shadow:var(--shadow);
-      text-align:center;
+      padding:34px;
+      backdrop-filter:blur(10px);
     }
 
-    .badge {
-      display:inline-block;
-      padding:8px 12px;
+    .hero {
+      text-align:center;
+      padding:8px 8px 24px;
+    }
+
+    .check {
+      width:64px;
+      height:64px;
+      margin:0 auto 18px;
       border-radius:999px;
-      background:#f0fdf4;
-      color:#15803d;
+      display:grid;
+      place-items:center;
+      color:white;
+      font-size:34px;
       font-weight:900;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 16px 34px rgba(139,92,246,.28);
+    }
+
+    .eyebrow {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:7px 12px;
+      margin-bottom:12px;
+      background:#fdf2f8;
+      color:#be185d;
       font-size:13px;
-      margin-bottom:16px;
+      font-weight:900;
     }
 
     h1 {
-      font-size:clamp(32px,5vw,48px);
-      line-height:1.05;
-      margin:0 0 14px;
+      margin:0;
+      font-size:clamp(34px,6vw,52px);
+      line-height:1.02;
+      letter-spacing:-.04em;
     }
 
-    p {
+    .subtitle {
+      margin:14px auto 0;
+      max-width:520px;
       color:var(--muted);
-      line-height:1.7;
-      font-size:17px;
-      margin:0 0 18px;
+      font-size:18px;
+      line-height:1.65;
     }
 
-    .summary {
-      text-align:left;
-      background:#f8fafc;
+    .appointment-card {
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:22px;
+      background:linear-gradient(180deg,#fff 0%,#fafafa 100%);
+      box-shadow:0 10px 30px rgba(17,24,39,.05);
+    }
+
+    .lesson-title {
+      margin:0 0 8px;
+      font-size:22px;
+      line-height:1.25;
+      letter-spacing:-.02em;
+    }
+
+    .time-main {
+      margin:8px 0 4px;
+      font-size:28px;
+      line-height:1.15;
+      font-weight:950;
+      letter-spacing:-.03em;
+    }
+
+    .date-main {
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+    }
+
+    .meta-grid {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .meta-item {
       border:1px solid var(--border);
       border-radius:18px;
-      padding:16px;
-      margin:22px 0;
-      color:var(--muted);
-      line-height:1.8;
+      background:#fff;
+      padding:13px 14px;
     }
 
-    .summary strong { color:var(--text); }
+    .meta-label {
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:5px;
+    }
 
-    .btns {
+    .meta-value {
+      display:block;
+      color:var(--text);
+      font-weight:850;
+      line-height:1.35;
+      overflow-wrap:anywhere;
+    }
+
+    .manage-card {
+      margin-top:16px;
+      border:1px solid #eadcff;
+      border-radius:24px;
+      padding:20px;
+      background:linear-gradient(135deg,#fff 0%,#faf5ff 100%);
+    }
+
+    .manage-card h2 {
+      margin:0 0 8px;
+      font-size:20px;
+      letter-spacing:-.02em;
+    }
+
+    .manage-card p {
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .actions {
       display:flex;
       flex-wrap:wrap;
       gap:12px;
-      justify-content:center;
-      margin-top:22px;
+      margin-top:18px;
     }
 
     .btn {
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      padding:14px 20px;
       border-radius:999px;
+      padding:13px 18px;
+      border:0;
       text-decoration:none;
-      font-weight:900;
+      font:inherit;
+      font-weight:950;
+      cursor:pointer;
     }
 
-    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
-    .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
+    .btn-primary {
+      color:white;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 24px rgba(139,92,246,.22);
+    }
+
+    .btn-secondary {
+      color:var(--text);
+      background:white;
+      border:1px solid var(--border);
+    }
+
+    .footer-links {
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:22px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .footer-links a {
+      color:#7c3aed;
+      text-decoration:none;
+    }
+
+    .footer-links a:hover { text-decoration:underline; }
+
+    .copy-note {
+      min-height:20px;
+      margin-top:10px;
+      color:var(--success);
+      font-size:14px;
+      font-weight:800;
+    }
 
     @media (max-width:640px) {
+      body { padding:18px; align-items:flex-start; }
+      .shell { padding:24px; border-radius:26px; }
+      .meta-grid { grid-template-columns:1fr; }
+      .time-main { font-size:24px; }
       .btn { width:100%; }
-      .card { padding:24px; }
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="badge">Booking confirmed</div>
-    <h1>Your trial class is booked</h1>
-    <p>Thank you. A confirmation has been created and the teacher will follow up if any details need to be adjusted.</p>
+  <main class="shell">
+    <section class="hero">
+      <div class="check">✓</div>
+      <div class="eyebrow">Booking confirmed</div>
+      <h1>You're all set</h1>
+      <p class="subtitle" id="subtitleText">Your lesson has been booked. Please save the details below before closing this page.</p>
+    </section>
 
-    <div class="summary">
-      <div><strong>Name:</strong> <span id="nameText">Guest</span></div>
-      <div><strong>Time:</strong> <span id="timeText">Confirmed</span></div>
-      <div><strong>Time zone:</strong> <span id="timezoneText">Your local time zone</span></div>
-    </div>
+    <section class="appointment-card">
+      <h2 class="lesson-title" id="classText">English Lesson</h2>
+      <div class="time-main" id="timeText">Confirmed</div>
+      <div class="date-main" id="dateText">Your selected date</div>
 
-    <p>Please save the time in your calendar. If you need to change the booking, contact the teacher directly.</p>
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">Time zone</span>
+          <span class="meta-value" id="timezoneText">Your local time zone</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Student</span>
+          <span class="meta-value" id="nameText">Guest</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Duration</span>
+          <span class="meta-value" id="durationText">Confirmed</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Credits used</span>
+          <span class="meta-value" id="creditText">Confirmed</span>
+        </div>
+        <div class="meta-item" style="grid-column:1 / -1;">
+          <span class="meta-label">Booking ID</span>
+          <span class="meta-value" id="bookingIdText">Not available</span>
+        </div>
+      </div>
+    </section>
 
-    <div class="btns">
-      <a class="btn btn-primary" href="index.html">Back to home</a>
-      <a class="btn btn-secondary" href="booking.html">Book another class</a>
+    <section class="manage-card" id="manageBox">
+      <h2>Need to make a change?</h2>
+      <p>You can view, change, or cancel this booking online up to 12 hours before the lesson.</p>
+      <div class="actions">
+        <a class="btn btn-primary" id="manageLink" href="#">Manage booking</a>
+        <button class="btn btn-secondary" type="button" id="copyLinkBtn">Copy link</button>
+      </div>
+      <div class="copy-note" id="copyNote"></div>
+    </section>
+
+    <div class="footer-links">
+      <a href="booking.html">Book another class</a>
+      <span>·</span>
+      <a href="index.html">Back to home</a>
     </div>
   </main>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const name = params.get("name") || "Guest";
+    const bookingId = params.get("bookingId") || "Not available";
+    const manageToken = params.get("manageToken") || "";
+    const manageLinkParam = params.get("manageLink") || "";
+    const classTitle = params.get("classTitle") || "English Lesson";
+    const duration = params.get("duration");
+    const creditCost = params.get("creditCost");
     const time = params.get("time");
+    const end = params.get("end");
     const timezone = params.get("timezone") || "Your local time zone";
 
     document.getElementById("nameText").textContent = name;
+    document.getElementById("bookingIdText").textContent = bookingId;
+    document.getElementById("classText").textContent = classTitle;
+    document.getElementById("subtitleText").textContent = `Your ${classTitle} has been booked. Please save the details below before closing this page.`;
+    document.getElementById("durationText").textContent = duration ? `${duration} minutes` : "Confirmed";
+    document.getElementById("creditText").textContent = creditCost === "0" ? "0 credits" : (creditCost ? `${creditCost} credit${creditCost === "1" ? "" : "s"}` : "Confirmed");
     document.getElementById("timezoneText").textContent = timezone;
 
+    const manageBox = document.getElementById("manageBox");
+    const manageLink = document.getElementById("manageLink");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copyNote = document.getElementById("copyNote");
+    let finalManageUrl = "";
+
+    if (manageLinkParam) {
+      finalManageUrl = manageLinkParam;
+    } else if (bookingId !== "Not available" && manageToken) {
+      finalManageUrl = `manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
+    }
+
+    if (finalManageUrl) {
+      manageLink.href = finalManageUrl;
+    } else {
+      manageBox.style.display = "none";
+    }
+
+    copyLinkBtn.addEventListener("click", async () => {
+      if (!finalManageUrl) return;
+      const absoluteUrl = new URL(finalManageUrl, window.location.href).href;
+      try {
+        await navigator.clipboard.writeText(absoluteUrl);
+        copyNote.textContent = "Management link copied.";
+      } catch (error) {
+        copyNote.textContent = absoluteUrl;
+      }
+    });
+
     if (time) {
-      document.getElementById("timeText").textContent = new Intl.DateTimeFormat("en", {
+      const startDate = new Date(time);
+      const endDate = end ? new Date(end) : null;
+      document.getElementById("dateText").textContent = new Intl.DateTimeFormat("en", {
         weekday: "long",
         year: "numeric",
         month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      }).format(new Date(time));
+        day: "numeric"
+      }).format(startDate);
+      const startTime = new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(startDate);
+      const endTime = endDate ? new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(endDate) : "";
+      document.getElementById("timeText").textContent = endTime ? `${startTime} - ${endTime}` : startTime;
     }
   </script>
 </body>

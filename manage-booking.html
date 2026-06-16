@@ -16,11 +16,11 @@
     h1 { font-size:clamp(30px,5vw,44px); margin:12px 0; line-height:1.05; }
     h2 { margin:0 0 12px; }
     p { color:var(--muted); line-height:1.65; }
-    .summary { background:#f8fafc; border:1px solid var(--border); border-radius:18px; padding:16px; display:grid; gap:9px; }
+    .summary { background:linear-gradient(180deg,#fdf2f8 0%,#faf5ff 100%); border:1px solid #f5d0fe; border-radius:20px; padding:16px; display:grid; gap:9px; color:#7e22ce; font-weight:750; }
     .summary strong { color:var(--text); }
     .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
-    .btn { border:0; border-radius:999px; padding:13px 18px; font-weight:900; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-flex; justify-content:center; align-items:center; }
-    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
+    .btn { border:0; border-radius:999px; min-height:52px; padding:13px 18px; font-weight:900; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-flex; justify-content:center; align-items:center; text-align:center; }
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; box-shadow:0 14px 30px rgba(236,72,153,.22); }
     .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
     .btn-danger { background:#fee2e2; color:#991b1b; }
     .btn:disabled { opacity:.55; cursor:not-allowed; }
@@ -32,11 +32,13 @@
     .field { display:grid; gap:8px; margin-top:14px; }
     label { font-weight:900; }
     input { width:100%; border:1px solid var(--border); border-radius:14px; padding:13px 14px; font:inherit; }
-    .slots { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
-    .slot { border:1px solid var(--border); background:white; border-radius:14px; padding:12px; font-weight:900; cursor:pointer; }
-    .slot:hover { border-color:#c4b5fd; background:#faf5ff; }
+    .slots { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
+    .slot { border:1px solid var(--border); background:white; border-radius:18px; min-height:64px; padding:13px 14px; font-weight:900; cursor:pointer; text-align:left; box-shadow:0 8px 18px rgba(17,24,39,.035); transition:.16s ease; }
+    .slot:hover { border-color:#c4b5fd; background:#faf5ff; transform:translateY(-1px); }
+    .slot-time { display:block; font-size:17px; line-height:1.15; color:var(--text); }
+    .slot-meta { display:block; margin-top:5px; color:var(--muted); font-size:12px; font-weight:850; }
     .hidden { display:none; }
-    @media (max-width:640px) { .card { padding:22px; } .slots { grid-template-columns:1fr; } .btn { width:100%; } }
+    @media (max-width:640px) { body { padding:16px; } .card { padding:22px; border-radius:28px; } .top { align-items:flex-start; } .actions { flex-direction:column; } .slots { grid-template-columns:1fr; } .btn { width:100%; } }
   </style>
 </head>
 <body>
@@ -170,7 +172,7 @@
         els.slots.innerHTML = slots.map((slot, index) => {
           const start = typeof slot === "string" ? slot : slot.start;
           const end = typeof slot === "string" ? addMinutesIso(start, state.booking.durationMinutes) : slot.end;
-          return `<button class="slot" type="button" data-index="${index}" data-start="${start}" data-end="${end}">${formatRange(start, end)}</button>`;
+          return `<button class="slot" type="button" data-index="${index}" data-start="${start}" data-end="${end}"><span class="slot-time">${formatTime(start)}</span><span class="slot-meta">${formatRange(start, end)}</span></button>`;
         }).join("");
         [...els.slots.querySelectorAll(".slot")].forEach(btn => btn.addEventListener("click", () => updateBooking(btn.dataset.start)));
       } catch (error) {

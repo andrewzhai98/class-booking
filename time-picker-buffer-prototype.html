@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Buffer Prototype | English with Becky</title>
+  <style>
+    :root{
+      --ink:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --paper:#fff;
+      --wash:#f8fafc;
+      --pink:#ec4899;
+      --violet:#8b5cf6;
+      --rose:#fdf2f8;
+      --lav:#faf5ff;
+      --buffer:#fef3c7;
+      --buffer-ink:#92400e;
+      --lesson:#ede9fe;
+      --lesson-ink:#5b21b6;
+      --busy:#f3f4f6;
+      --busy-ink:#6b7280;
+      --shadow:0 18px 48px rgba(17,24,39,.08);
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#fff 0%,var(--wash) 100%);
+      min-height:100vh;
+    }
+
+    .container{width:min(1120px,92%);margin:0 auto;}
+
+    .topbar{
+      padding:22px 0 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+    }
+
+    .brand{font-weight:900;text-decoration:none;color:var(--ink);letter-spacing:-.02em;}
+    .nav{color:var(--muted);text-decoration:none;font-weight:800;font-size:14px;}
+
+    .hero{padding:28px 0 22px;text-align:center;}
+
+    .pill{
+      display:inline-flex;
+      padding:8px 13px;
+      border-radius:999px;
+      background:var(--rose);
+      color:#be185d;
+      font-weight:900;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    h1{
+      margin:0 0 14px;
+      font-size:clamp(34px,5vw,58px);
+      line-height:1.04;
+      letter-spacing:-.05em;
+    }
+
+    .hero p{
+      max-width:780px;
+      margin:0 auto;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:18px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1fr 390px;
+      gap:20px;
+      align-items:start;
+      padding:18px 0 48px;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--line);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .student{padding:24px;}
+    .teacher{padding:24px;position:sticky;top:18px;}
+
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;}
+    .section-head h2{margin:0 0 8px;font-size:24px;letter-spacing:-.03em;}
+    .section-head p{margin:0;color:var(--muted);line-height:1.55;}
+
+    .date-strip{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    .date-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      padding:12px 10px;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .date-btn.active{border-color:#d8b4fe;background:var(--lav);}
+    .date-btn span{display:block;color:var(--muted);font-size:13px;font-weight:800;margin-bottom:5px;}
+    .date-btn strong{font-size:17px;}
+
+    .slot-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+
+    .slot{
+      border:1px solid var(--line);
+      border-radius:16px;
+      min-height:54px;
+      background:#fff;
+      color:var(--ink);
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    .slot:hover{border-color:#d8b4fe;background:var(--lav);transform:translateY(-1px);}
+    .slot.selected{border-color:transparent;background:linear-gradient(90deg,var(--pink),var(--violet));color:white;box-shadow:0 12px 30px rgba(236,72,153,.2);}
+    .slot.unavailable{background:#f3f4f6;color:#9ca3af;cursor:not-allowed;transform:none;box-shadow:none;}
+
+    .summary{
+      margin-top:18px;
+      border-radius:22px;
+      padding:18px;
+      background:var(--rose);
+      border:1px solid #fbcfe8;
+    }
+
+    .summary strong{display:block;margin-bottom:5px;}
+    .summary span{color:#9d174d;font-size:14px;line-height:1.5;}
+
+    .teacher h2{margin:0 0 10px;font-size:24px;letter-spacing:-.03em;}
+    .teacher p{margin:0 0 16px;color:var(--muted);line-height:1.6;}
+
+    .calendar{
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .cal-row{
+      display:grid;
+      grid-template-columns:74px 1fr;
+      min-height:46px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .cal-row:last-child{border-bottom:0;}
+    .cal-time{padding:13px 12px;color:var(--muted);font-weight:900;font-size:13px;background:#fbfdff;}
+    .cal-cell{padding:6px 8px;display:flex;align-items:center;}
+
+    .event{
+      width:100%;
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.3;
+    }
+
+    .event.buffer{background:var(--buffer);color:var(--buffer-ink);border:1px solid #fde68a;}
+    .event.lesson{background:var(--lesson);color:var(--lesson-ink);border:1px solid #ddd6fe;}
+    .event.busy{background:var(--busy);color:var(--busy-ink);border:1px solid var(--line);}
+    .event small{display:block;font-weight:800;opacity:.75;margin-top:2px;}
+
+    .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px;}
+    .tag{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--muted);}
+    .dot{width:12px;height:12px;border-radius:50%;}
+    .dot.lesson{background:var(--lesson);border:1px solid #ddd6fe;}
+    .dot.buffer{background:var(--buffer);border:1px solid #fde68a;}
+    .dot.busy{background:var(--busy);border:1px solid var(--line);}
+
+    .note{
+      margin-top:18px;
+      padding:16px;
+      border-radius:20px;
+      background:#111827;
+      color:white;
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .note strong{display:block;margin-bottom:6px;}
+    .note span{color:rgba(255,255,255,.78);}
+
+    @media (max-width:960px){
+      .layout{grid-template-columns:1fr;}
+      .teacher{position:static;}
+      .slot-grid{grid-template-columns:repeat(3,1fr);}
+    }
+
+    @media (max-width:600px){
+      .date-strip{grid-template-columns:repeat(2,1fr);}
+      .slot-grid{grid-template-columns:repeat(2,1fr);}
+      .section-head{display:block;}
+    }
+  </style>
+</head>
+<body>
+  <header class="container topbar">
+    <a class="brand" href="index.html">English with Becky</a>
+    <a class="nav" href="booking.html">Back to booking</a>
+  </header>
+
+  <main>
+    <section class="container hero">
+      <div class="pill">Prototype · hidden buffer logic</div>
+      <h1>Students choose a time. The calendar protects the gaps.</h1>
+      <p>The student side stays simple: they only see available lesson start times. Behind the scenes, the teacher calendar can show preparation and recovery buffers in a different colour.</p>
+    </section>
+
+    <section class="container layout">
+      <section class="panel student">
+        <div class="section-head">
+          <div>
+            <h2>Student view</h2>
+            <p>No buffer explanation here. The system only shows times that are actually safe to book.</p>
+          </div>
+        </div>
+
+        <div class="date-strip">
+          <button class="date-btn active" type="button"><span>Mon</span><strong>17 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Tue</span><strong>18 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Wed</span><strong>19 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Thu</span><strong>20 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Fri</span><strong>21 Jun</strong></button>
+        </div>
+
+        <div class="slot-grid" id="slotGrid"></div>
+
+        <div class="summary" id="summary">
+          <strong>No time selected yet</strong>
+          <span>Choose a start time to continue.</span>
+        </div>
+      </section>
+
+      <aside class="panel teacher">
+        <h2>Teacher calendar view</h2>
+        <p>After a student books 12:00, Calendar receives separate blocks so the teacher can visually distinguish the lesson and the protected gaps.</p>
+
+        <div class="calendar" id="calendar"></div>
+
+        <div class="legend">
+          <span class="tag"><span class="dot buffer"></span> Buffer</span>
+          <span class="tag"><span class="dot lesson"></span> Lesson</span>
+          <span class="tag"><span class="dot busy"></span> Existing booking</span>
+        </div>
+
+        <div class="note">
+          <strong>Recommended backend model</strong>
+          <span>Create three Calendar events: pre-buffer, lesson, post-buffer. Store all event IDs with the booking so update/cancel can move or delete them together.</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const slotGrid = document.getElementById("slotGrid");
+    const summary = document.getElementById("summary");
+    const calendar = document.getElementById("calendar");
+    let selected = "12:00";
+
+    const available = ["09:00","09:15","09:30","11:30","11:45","12:00","12:15","14:30","14:45","15:00","15:15","16:00","16:15"];
+    const unavailable = ["10:00","10:15","10:30","10:45","13:00","13:15","13:30","13:45"];
+
+    function toMinutes(time){
+      const [h,m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function fromMinutes(value){
+      const h = Math.floor(value / 60);
+      const m = value % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    }
+
+    function display(time){
+      const [h,m] = time.split(":").map(Number);
+      const suffix = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2,"0")} ${suffix}`;
+    }
+
+    function renderSlots(){
+      slotGrid.innerHTML = "";
+      const times = [...available, ...unavailable].sort((a,b) => toMinutes(a) - toMinutes(b));
+      times.forEach(time => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "slot";
+        button.textContent = display(time);
+        if (unavailable.includes(time)) {
+          button.classList.add("unavailable");
+          button.disabled = true;
+        } else {
+          if (time === selected) button.classList.add("selected");
+          button.addEventListener("click", () => {
+            selected = time;
+            renderSlots();
+            renderCalendar();
+          });
+        }
+        slotGrid.appendChild(button);
+      });
+      const start = toMinutes(selected);
+      summary.innerHTML = `<strong>Regular Lesson · ${display(selected)} – ${display(fromMinutes(start + 45))}</strong><span>The student does not see buffer details, but Calendar will block ${display(fromMinutes(start - 15))} – ${display(fromMinutes(start + 60))} for the teacher.</span>`;
+    }
+
+    function eventFor(time){
+      const min = toMinutes(time);
+      const start = toMinutes(selected);
+      if (min === 10 * 60) return { cls:"busy", title:"Existing lesson", sub:"10:00 – 10:45" };
+      if (min === start - 15) return { cls:"buffer", title:"Buffer · prepare", sub:`${display(fromMinutes(start - 15))} – ${display(selected)}` };
+      if (min === start) return { cls:"lesson", title:"Regular English Lesson", sub:`${display(selected)} – ${display(fromMinutes(start + 45))}` };
+      if (min === start + 45) return { cls:"buffer", title:"Buffer · reset", sub:`${display(fromMinutes(start + 45))} – ${display(fromMinutes(start + 60))}` };
+      return null;
+    }
+
+    function renderCalendar(){
+      calendar.innerHTML = "";
+      for (let min = 9 * 60; min <= 16 * 60; min += 15) {
+        const time = fromMinutes(min);
+        const row = document.createElement("div");
+        row.className = "cal-row";
+        row.innerHTML = `<div class="cal-time">${display(time)}</div><div class="cal-cell"></div>`;
+        const event = eventFor(time);
+        if (event) {
+          row.querySelector(".cal-cell").innerHTML = `<div class="event ${event.cls}">${event.title}<small>${event.sub}</small></div>`;
+        }
+        calendar.appendChild(row);
+      }
+    }
+
+    renderSlots();
+    renderCalendar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Picker Prototype | English with Becky</title>
+  <style>
+    :root{
+      --ink:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --paper:#fff;
+      --wash:#f8fafc;
+      --pink:#ec4899;
+      --violet:#8b5cf6;
+      --rose:#fdf2f8;
+      --lav:#faf5ff;
+      --green:#16a34a;
+      --amber:#f59e0b;
+      --shadow:0 18px 48px rgba(17,24,39,.08);
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(236,72,153,.12), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(139,92,246,.12), transparent 30%),
+        linear-gradient(180deg,#fff 0%,var(--wash) 100%);
+      min-height:100vh;
+    }
+
+    .container{width:min(1120px,92%);margin:0 auto;}
+
+    .topbar{
+      padding:22px 0 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+    }
+
+    .brand{font-weight:900;text-decoration:none;color:var(--ink);letter-spacing:-.02em;}
+    .nav{color:var(--muted);text-decoration:none;font-weight:800;font-size:14px;}
+
+    .hero{padding:28px 0 22px;text-align:center;}
+
+    .pill{
+      display:inline-flex;
+      padding:8px 13px;
+      border-radius:999px;
+      background:var(--rose);
+      color:#be185d;
+      font-weight:900;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    h1{
+      margin:0 0 14px;
+      font-size:clamp(36px,5vw,62px);
+      line-height:1.02;
+      letter-spacing:-.05em;
+    }
+
+    .hero p{
+      max-width:760px;
+      margin:0 auto;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:18px;
+    }
+
+    .prototype{
+      display:grid;
+      grid-template-columns:330px 1fr;
+      gap:20px;
+      align-items:start;
+      padding:18px 0 48px;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+    }
+
+    .control{padding:24px;position:sticky;top:18px;}
+    .control h2,.picker h2{margin:0 0 10px;font-size:24px;letter-spacing:-.03em;}
+    .control p{margin:0 0 18px;color:var(--muted);line-height:1.65;}
+
+    .class-toggle{display:grid;gap:10px;margin-bottom:18px;}
+
+    .class-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      cursor:pointer;
+      background:#fff;
+      transition:.15s ease;
+    }
+
+    .class-card.active{border-color:#d8b4fe;background:var(--lav);box-shadow:0 10px 24px rgba(139,92,246,.09);}
+    .class-card strong{display:block;margin-bottom:4px;}
+    .class-card span{color:var(--muted);font-size:14px;}
+
+    .rule-box{
+      border-radius:22px;
+      background:linear-gradient(135deg,#111827 0%,#6d28d9 100%);
+      color:white;
+      padding:18px;
+      margin-top:18px;
+    }
+
+    .rule-box strong{display:block;margin-bottom:8px;font-size:16px;}
+    .rule-box p{color:rgba(255,255,255,.82);font-size:14px;margin:0;line-height:1.6;}
+
+    .legend{display:grid;gap:9px;margin-top:18px;}
+    .legend-row{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;}
+    .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+    .dot.open{background:linear-gradient(90deg,var(--pink),var(--violet));}
+    .dot.busy{background:#d1d5db;}
+    .dot.buffer{background:#fde68a;}
+
+    .picker{padding:24px;}
+    .picker-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+    .picker-head p{margin:0;color:var(--muted);line-height:1.55;}
+
+    .date-strip{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    .date-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      padding:12px 10px;
+      cursor:pointer;
+      text-align:left;
+      transition:.15s ease;
+    }
+
+    .date-btn.active{border-color:#d8b4fe;background:var(--lav);}
+    .date-btn span{display:block;color:var(--muted);font-size:13px;font-weight:800;margin-bottom:5px;}
+    .date-btn strong{font-size:17px;}
+
+    .timeline{
+      border:1px solid var(--line);
+      border-radius:24px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .slot-row{
+      display:grid;
+      grid-template-columns:92px 1fr;
+      min-height:58px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .slot-row:last-child{border-bottom:0;}
+    .slot-time{padding:17px 16px;color:var(--muted);font-weight:900;font-size:14px;background:#fbfdff;}
+    .slot-cell{display:flex;align-items:center;padding:9px 12px;}
+
+    .slot-btn{
+      width:100%;
+      min-height:40px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      color:var(--ink);
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+      text-align:left;
+      padding:10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .slot-btn:hover{border-color:#d8b4fe;background:var(--lav);transform:translateY(-1px);}
+    .slot-btn.selected{border-color:transparent;background:linear-gradient(90deg,var(--pink),var(--violet));color:white;box-shadow:0 12px 30px rgba(236,72,153,.2);}
+    .slot-btn.disabled{cursor:not-allowed;background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb;box-shadow:none;transform:none;}
+    .slot-btn.buffer{cursor:not-allowed;background:#fffbeb;color:#92400e;border-color:#fde68a;box-shadow:none;transform:none;}
+    .slot-btn small{font-weight:800;opacity:.72;}
+
+    .summary{
+      margin-top:18px;
+      border-radius:22px;
+      padding:18px;
+      background:var(--rose);
+      border:1px solid #fbcfe8;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .summary strong{display:block;margin-bottom:4px;}
+    .summary span{color:#9d174d;font-size:14px;line-height:1.5;}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:0;
+      border-radius:999px;
+      min-height:46px;
+      padding:12px 18px;
+      background:linear-gradient(90deg,var(--pink),var(--violet));
+      color:white;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .compact-note{
+      margin-top:16px;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:14px;
+    }
+
+    @media (max-width:940px){
+      .prototype{grid-template-columns:1fr;}
+      .control{position:static;}
+      .date-strip{grid-template-columns:repeat(2,1fr);}
+    }
+
+    @media (max-width:560px){
+      .picker-head{display:block;}
+      .slot-row{grid-template-columns:72px 1fr;}
+      .slot-time{padding:17px 10px;font-size:13px;}
+      .summary{display:block;}
+      .summary .btn{width:100%;margin-top:12px;}
+    }
+  </style>
+</head>
+<body>
+  <header class="container topbar">
+    <a class="brand" href="index.html">English with Becky</a>
+    <a class="nav" href="booking.html">Back to booking</a>
+  </header>
+
+  <main>
+    <section class="container hero">
+      <div class="pill">Prototype · 15-minute start times + 15-minute teacher break</div>
+      <h1>A softer way to choose time</h1>
+      <p>Instead of showing many equal-looking cards, this prototype groups the day into a vertical timeline. Students can choose every 15 minutes, while unavailable and teacher-rest times are clearly explained.</p>
+    </section>
+
+    <section class="container prototype">
+      <aside class="panel control">
+        <h2>Lesson type</h2>
+        <p>The 15-minute interval only controls possible start times. Lesson length and teacher break are still handled by the booking rules.</p>
+        <div class="class-toggle">
+          <div class="class-card active" data-duration="45" data-type="Regular Lesson">
+            <strong>Regular Lesson</strong>
+            <span>45 minutes · uses 1 credit</span>
+          </div>
+          <div class="class-card" data-duration="10" data-type="Free Trial">
+            <strong>Free Trial</strong>
+            <span>10 minutes · one per student</span>
+          </div>
+        </div>
+
+        <div class="rule-box">
+          <strong>Teacher break rule</strong>
+          <p>After each booking, the next 15 minutes are blocked automatically. Students will not see slots that would touch another lesson without a break.</p>
+        </div>
+
+        <div class="legend">
+          <div class="legend-row"><span class="dot open"></span> Available start time</div>
+          <div class="legend-row"><span class="dot busy"></span> Already booked</div>
+          <div class="legend-row"><span class="dot buffer"></span> Teacher rest break</div>
+        </div>
+      </aside>
+
+      <section class="panel picker">
+        <div class="picker-head">
+          <div>
+            <h2>Choose a start time</h2>
+            <p>Showing every 15 minutes. Busy and rest periods are visible but not selectable.</p>
+          </div>
+        </div>
+
+        <div class="date-strip">
+          <button class="date-btn active" type="button"><span>Mon</span><strong>17 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Tue</span><strong>18 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Wed</span><strong>19 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Thu</span><strong>20 Jun</strong></button>
+          <button class="date-btn" type="button"><span>Fri</span><strong>21 Jun</strong></button>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+
+        <div class="summary" id="summary">
+          <div>
+            <strong>No time selected yet</strong>
+            <span>Pick a start time to see the lesson range and teacher break.</span>
+          </div>
+          <button class="btn" type="button">Continue</button>
+        </div>
+
+        <p class="compact-note">My recommendation: every 15 minutes is usable, but it should not be displayed as a big flat grid. A timeline is easier to scan because the student understands the day as a schedule, not as dozens of disconnected buttons.</p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const timeline = document.getElementById("timeline");
+    const summary = document.getElementById("summary");
+    const classCards = document.querySelectorAll(".class-card");
+    let lessonDuration = 45;
+    let lessonType = "Regular Lesson";
+    let selectedButton = null;
+
+    const blocked = {
+      "10:00": { type:"busy", label:"Booked lesson" },
+      "10:45": { type:"buffer", label:"Teacher break" },
+      "13:15": { type:"busy", label:"Booked lesson" },
+      "14:00": { type:"buffer", label:"Teacher break" },
+      "16:30": { type:"busy", label:"Booked lesson" },
+      "17:15": { type:"buffer", label:"Teacher break" }
+    };
+
+    function toMinutes(time) {
+      const [h,m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function fromMinutes(value) {
+      const h = Math.floor(value / 60);
+      const m = value % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    }
+
+    function formatDisplay(time) {
+      const [h,m] = time.split(":").map(Number);
+      const suffix = h >= 12 ? "PM" : "AM";
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2,"0")} ${suffix}`;
+    }
+
+    function isBlockedByDuration(start) {
+      const startMin = toMinutes(start);
+      const endMin = startMin + lessonDuration;
+      const protectedEnd = endMin + 15;
+      return Object.keys(blocked).some(time => {
+        if (blocked[time].type !== "busy") return false;
+        const busyStart = toMinutes(time);
+        const busyEnd = busyStart + 45;
+        return startMin < busyEnd + 15 && protectedEnd > busyStart;
+      });
+    }
+
+    function renderTimeline() {
+      timeline.innerHTML = "";
+      selectedButton = null;
+      for (let min = 9 * 60; min <= 17 * 60; min += 15) {
+        const time = fromMinutes(min);
+        const row = document.createElement("div");
+        row.className = "slot-row";
+
+        const timeEl = document.createElement("div");
+        timeEl.className = "slot-time";
+        timeEl.textContent = formatDisplay(time);
+
+        const cell = document.createElement("div");
+        cell.className = "slot-cell";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "slot-btn";
+
+        const block = blocked[time];
+        const durationConflict = !block && isBlockedByDuration(time);
+        const end = fromMinutes(min + lessonDuration);
+        const breakEnd = fromMinutes(min + lessonDuration + 15);
+
+        if (block) {
+          btn.classList.add(block.type === "buffer" ? "buffer" : "disabled");
+          btn.disabled = true;
+          btn.innerHTML = `<span>${block.label}</span><small>${formatDisplay(time)}</small>`;
+        } else if (durationConflict || min + lessonDuration + 15 > 18 * 60) {
+          btn.classList.add("disabled");
+          btn.disabled = true;
+          btn.innerHTML = `<span>Not enough space</span><small>needs break</small>`;
+        } else {
+          btn.innerHTML = `<span>${formatDisplay(time)} start</span><small>${lessonDuration} min + 15 min break</small>`;
+          btn.addEventListener("click", () => {
+            if (selectedButton) selectedButton.classList.remove("selected");
+            selectedButton = btn;
+            btn.classList.add("selected");
+            summary.innerHTML = `<div><strong>${lessonType}: ${formatDisplay(time)} – ${formatDisplay(end)}</strong><span>Teacher break is protected until ${formatDisplay(breakEnd)}.</span></div><button class="btn" type="button">Continue</button>`;
+          });
+        }
+
+        cell.appendChild(btn);
+        row.appendChild(timeEl);
+        row.appendChild(cell);
+        timeline.appendChild(row);
+      }
+
+      summary.innerHTML = `<div><strong>No time selected yet</strong><span>Pick a start time to see the lesson range and teacher break.</span></div><button class="btn" type="button">Continue</button>`;
+    }
+
+    classCards.forEach(card => {
+      card.addEventListener("click", () => {
+        classCards.forEach(item => item.classList.remove("active"));
+        card.classList.add("active");
+        lessonDuration = Number(card.dataset.duration);
+        lessonType = card.dataset.type;
+        renderTimeline();
+      });
+    });
+
+    renderTimeline();
+  </script>
+</body>
+</html>

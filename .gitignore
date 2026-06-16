@@ -25,3 +25,6 @@ npm-debug.log*
 
 # OS generated files
 Thumbs.db
+
+# WorkBuddy local workspace (not project code)
+.workbuddy/

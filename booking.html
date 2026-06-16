@@ -85,7 +85,15 @@
       margin:0 0 18px;
     }
 
-    .info-list { display:grid; gap:10px; margin-top:18px; }
+    .info-list {
+      display:grid;
+      gap:10px;
+      margin-top:18px;
+      padding:16px;
+      border-radius:20px;
+      background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);
+      border:1px solid #f3e8ff;
+    }
 
     .class-options {
       display:grid;
@@ -96,30 +104,61 @@
 
     .class-option {
       text-align:left;
-      border:1px solid var(--border);
+      border:2px solid var(--border);
       background:white;
-      border-radius:18px;
-      padding:16px;
+      border-radius:22px;
+      padding:18px 16px 56px;
       cursor:pointer;
       font-family:inherit;
       color:var(--text);
+      position:relative;
+      min-height:174px;
+      box-shadow:0 10px 24px rgba(17,24,39,.045);
+      transition:.18s ease;
+    }
+
+    .class-option::after {
+      content:"Tap to select";
+      position:absolute;
+      left:16px;
+      bottom:16px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#111827;
+      color:white;
+      font-size:12px;
+      font-weight:950;
     }
 
     .class-option:hover {
       border-color:#c4b5fd;
       background:#faf5ff;
+      transform:translateY(-1px);
+      box-shadow:0 14px 30px rgba(139,92,246,.11);
     }
 
     .class-option.selected {
       border-color:transparent;
       color:white;
-      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 16px 34px rgba(236,72,153,.22);
+    }
+
+    .class-option.selected::after {
+      content:"Selected";
+      background:rgba(255,255,255,.22);
+      color:white;
     }
 
     .class-option strong {
       display:block;
-      font-size:16px;
-      margin-bottom:6px;
+      font-size:18px;
+      margin-bottom:7px;
+      letter-spacing:-.02em;
     }
 
     .class-option span {
@@ -173,37 +212,49 @@
     .link-btn:hover { text-decoration:underline; }
 
     .info-item {
-      background:#faf5ff;
-      border:1px solid #ede9fe;
-      border-radius:16px;
-      padding:12px;
-      color:#4c1d95;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:#4b5563;
       font-size:14px;
-      font-weight:700;
+      line-height:1.45;
+      font-weight:750;
+    }
+
+    .info-item::before {
+      content:"";
+      width:7px;
+      height:7px;
+      flex:0 0 7px;
+      margin-top:7px;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
     }
 
     .steps {
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:10px;
       margin-bottom:18px;
     }
 
     .step {
       border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px;
+      border-radius:18px;
+      padding:12px 10px;
       font-size:13px;
       color:var(--muted);
-      font-weight:800;
+      font-weight:900;
       text-align:center;
       background:#fff;
+      box-shadow:0 8px 18px rgba(17,24,39,.035);
     }
 
     .step.active {
       color:white;
       border-color:transparent;
       background:linear-gradient(90deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 26px rgba(236,72,153,.20);
     }
 
     .field { margin-bottom:14px; }
@@ -296,23 +347,42 @@
 
     .slots {
       display:grid;
+      gap:16px;
+      margin-top:10px;
+    }
+
+    .slot-group-title {
+      margin:2px 0 8px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:950;
+    }
+
+    .slot-grid {
+      display:grid;
       grid-template-columns:repeat(2,1fr);
       gap:10px;
-      margin-top:10px;
     }
 
     .slot {
       border:1px solid var(--border);
       background:#fff;
-      border-radius:14px;
-      padding:13px;
+      border-radius:18px;
+      padding:13px 14px;
+      min-height:64px;
       cursor:pointer;
       font-weight:900;
       color:var(--text);
+      text-align:left;
+      box-shadow:0 8px 18px rgba(17,24,39,.035);
+      transition:.16s ease;
     }
 
-    .slot:hover { border-color:#c4b5fd; background:#faf5ff; }
-    .slot.selected { color:white; border-color:transparent; background:linear-gradient(90deg,var(--primary),var(--primary2)); }
+    .slot:hover { border-color:#c4b5fd; background:#faf5ff; transform:translateY(-1px); }
+    .slot.selected { color:white; border-color:transparent; background:linear-gradient(90deg,var(--primary),var(--primary2)); box-shadow:0 14px 30px rgba(236,72,153,.20); }
+    .slot-time { display:block; font-size:18px; line-height:1.1; }
+    .slot-meta { display:block; margin-top:5px; color:var(--muted); font-size:12px; font-weight:850; }
+    .slot.selected .slot-meta { color:rgba(255,255,255,.78); }
 
     .notice {
       margin-top:12px;
@@ -343,30 +413,48 @@
       font-family:inherit;
     }
 
-    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; }
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; box-shadow:0 14px 30px rgba(236,72,153,.22); }
     .btn-secondary { background:white; border:1px solid var(--border); color:var(--text); }
     .btn:disabled { opacity:.55; cursor:not-allowed; }
 
     .form-actions { display:grid; gap:10px; margin-top:18px; }
 
     .summary {
-      background:#f8fafc;
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:14px;
+      background:linear-gradient(180deg,#fdf2f8 0%,#faf5ff 100%);
+      border:1px solid #f5d0fe;
+      border-radius:20px;
+      padding:15px;
       margin-bottom:16px;
-      color:var(--muted);
+      color:#7e22ce;
       line-height:1.6;
       font-size:14px;
+      font-weight:750;
     }
 
     .summary strong { color:var(--text); }
     .hidden { display:none; }
 
     @media (max-width:900px) {
-      .layout, .steps, .class-options { grid-template-columns:1fr; }
-      .topbar { align-items:flex-start; flex-direction:column; }
-      .slots { grid-template-columns:1fr; }
+      .page { padding:18px 0 36px; }
+      .layout, .class-options { grid-template-columns:1fr; }
+      .topbar { align-items:flex-start; flex-direction:column; margin-bottom:16px; }
+      .card { border-radius:28px; padding:20px; }
+      .steps { grid-template-columns:repeat(2,1fr); }
+      .class-option { min-height:158px; }
+      .calendar-grid { gap:6px; }
+      .day { min-height:48px; border-radius:16px; }
+      .slot-grid { grid-template-columns:repeat(2,1fr); }
+      .btn { min-height:54px; }
+    }
+
+    @media (max-width:520px) {
+      .container { width:min(100% - 28px,1080px); }
+      h1 { font-size:34px; }
+      .sub { font-size:15px; }
+      .steps { gap:8px; }
+      .step { font-size:12px; padding:10px 8px; }
+      .slot-grid { grid-template-columns:1fr; }
+      .summary-row { align-items:flex-start; }
     }
   </style>
 </head>
@@ -742,11 +830,24 @@
     }
 
     function renderSlots() {
-      elements.slots.innerHTML = state.slots.map((slot, index) => {
+      const groups = [
+        { title: "Morning", test: start => new Date(start).getHours() < 12, items: [] },
+        { title: "Afternoon", test: start => new Date(start).getHours() >= 12 && new Date(start).getHours() < 17, items: [] },
+        { title: "Evening", test: start => new Date(start).getHours() >= 17, items: [] }
+      ];
+
+      state.slots.forEach((slot, index) => {
         const start = typeof slot === "string" ? slot : slot.start;
+        const end = typeof slot === "string" ? addMinutesIso(start, state.selectedClass.durationMinutes) : slot.end;
         const label = typeof slot === "string" ? formatTime(start) : (slot.label || formatTime(start));
-        return `<button class="slot" type="button" data-index="${index}">${label}</button>`;
-      }).join("");
+        const group = groups.find(item => item.test(start)) || groups[0];
+        group.items.push(`<button class="slot" type="button" data-index="${index}"><span class="slot-time">${label}</span><span class="slot-meta">${state.selectedClass.durationMinutes} min · ends ${formatTime(end)}</span></button>`);
+      });
+
+      elements.slots.innerHTML = groups
+        .filter(group => group.items.length)
+        .map(group => `<section class="slot-group"><div class="slot-group-title">${group.title}</div><div class="slot-grid">${group.items.join("")}</div></section>`)
+        .join("");
 
       [...elements.slots.querySelectorAll(".slot")].forEach(button => {
         button.addEventListener("click", () => selectSlot(state.slots[Number(button.getAttribute("data-index"))]));

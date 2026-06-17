@@ -6,6 +6,7 @@ const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
 const SLOT_DURATION_MINUTES = Number(process.env.SLOT_DURATION_MINUTES || 15);
 const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
+const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { message: "Method not allowed" });
@@ -58,7 +59,7 @@ exports.handler = async (event) => {
       date,
       timezone: visitorTimezone,
       teacherTimezone: DEFAULT_TIMEZONE,
-      slotDurationMinutes: SLOT_DURATION_MINUTES,
+      minLeadHours: MIN_LEAD_HOURS,
       slots
     });
   } catch (error) {
@@ -69,7 +70,7 @@ exports.handler = async (event) => {
 
 function buildAvailableSlots({ startOfWork, endOfWork, duration, preBufferMinutes, postBufferMinutes, busy, visitorTimezone }) {
   const slots = [];
-  const now = DateTime.utc().plus({ minutes: 30 });
+  const now = DateTime.utc().plus({ hours: MIN_LEAD_HOURS });
   let cursor = startOfWork;
 
   while (cursor.plus({ minutes: duration }) <= endOfWork) {

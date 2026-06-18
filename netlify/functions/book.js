@@ -14,6 +14,7 @@ const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.
 const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const INVITE_ATTENDEES = process.env.INVITE_ATTENDEES === "true";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MAX_DAYS_AHEAD = Number(process.env.MAX_DAYS_AHEAD || 14);
 const MAX_BOOKINGS_PER_DAY = Number(process.env.MAX_BOOKINGS_PER_DAY || 4);
 const MAX_ACTIVE_BOOKINGS_PER_EMAIL = Number(process.env.MAX_ACTIVE_BOOKINGS_PER_EMAIL || 2);
 const SITE_URL = process.env.SITE_URL || "";
@@ -55,6 +56,10 @@ exports.handler = async (event) => {
 
     if (start < now.plus({ hours: MIN_LEAD_HOURS })) {
       throw userError(`Please choose a time at least ${MIN_LEAD_HOURS} hours in advance.`, 409);
+    }
+
+    if (start > now.plus({ days: MAX_DAYS_AHEAD })) {
+      throw userError(`Please choose a time within the next ${MAX_DAYS_AHEAD} days.`, 409);
     }
 
     let bookings = [];

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>English with Becky</title>
+  <title>English with [ph_REAL_NAME_3_ph]</title>
   <style>
     :root {
       --bg:#f8fafc;
@@ -21,7 +21,10 @@
     body{
       margin:0;
       font-family:Inter,Arial,sans-serif;
-      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      background:
+        radial-gradient(circle at 8% 6%, rgba(236,72,153,.14), transparent 26%),
+        radial-gradient(circle at 88% 10%, rgba(139,92,246,.12), transparent 28%),
+        linear-gradient(180deg,#fff 0%,#f8fafc 56%,#fff 100%);
       color:var(--text);
     }
 
@@ -39,11 +42,12 @@
       grid-template-columns:.92fr 1.08fr;
       gap:22px;
       align-items:center;
-      background:white;
-      border:1px solid var(--border);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(229,231,235,.9);
       border-radius:28px;
       padding:18px;
       box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
     }
 
     .teacher-photo{
@@ -140,30 +144,132 @@
       line-height:1.7;
     }
 
-    .grid-3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-    }
-
-    .card{
-      background:white;
-      border:1px solid var(--border);
-      border-radius:22px;
-      padding:22px;
+    .focus-panel{
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(229,231,235,.9);
+      border-radius:26px;
+      padding:24px;
       box-shadow:var(--shadow);
     }
 
-    .card h3{
-      margin-top:0;
-      margin-bottom:10px;
-      font-size:22px;
+    .focus-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px 24px;
     }
 
-    .card p{
+    .focus-item{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .dot{
+      width:11px;
+      height:11px;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+      margin-top:8px;
+      flex:0 0 11px;
+    }
+
+    .focus-item h3{
+      font-size:21px;
+      margin:0 0 6px;
+    }
+
+    .focus-item p{
       color:var(--muted);
-      line-height:1.7;
+      line-height:1.65;
       margin:0;
+    }
+
+    .tag-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .tag-list span{
+      display:inline-flex;
+      padding:6px 9px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      color:#4b5563;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .tiny-flow{
+      max-width:860px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .bubble{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      min-height:46px;
+      padding:10px 15px 10px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      border:1px solid #ede9fe;
+      box-shadow:0 10px 26px rgba(17,24,39,.055);
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .bubble em{
+      width:26px;
+      height:26px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:#fdf2f8;
+      color:#be185d;
+      font-size:12px;
+      font-style:normal;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+
+    .tiny-arrow{
+      color:#c4b5fd;
+      font-size:20px;
+      font-weight:900;
+    }
+
+    .faq-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .faq-item{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:20px;
+      box-shadow:0 10px 28px rgba(17,24,39,.045);
+    }
+
+    .faq-item strong{
+      display:block;
+      margin-bottom:7px;
+      font-size:18px;
+    }
+
+    .faq-item span{
+      color:var(--muted);
+      line-height:1.6;
     }
 
     .cta{
@@ -187,7 +293,7 @@
     }
 
     @media (max-width:900px){
-      .hero-card,.grid-3{
+      .hero-card,.focus-grid,.faq-grid{
         grid-template-columns:1fr;
       }
 
@@ -199,25 +305,44 @@
         width:100%;
       }
     }
+
+    @media (max-width:560px){
+      .tiny-flow{
+        display:grid;
+        grid-template-columns:1fr;
+        max-width:360px;
+      }
+
+      .bubble{
+        justify-content:flex-start;
+        width:100%;
+        white-space:normal;
+      }
+
+      .tiny-arrow{
+        transform:rotate(90deg);
+        text-align:center;
+      }
+    }
   </style>
 </head>
 <body>
   <header class="hero container">
     <div class="hero-card">
-      <img class="teacher-photo" src="WechatIMG158.jpg" alt="Becky" />
+      <img class="teacher-photo" src="WechatIMG158.jpg" alt="[ph_REAL_NAME_3_ph]" />
       <div>
         <div class="pill">1-on-1 English Lessons · British Teacher · Online</div>
         <h1>Speak Naturally, Learn with Confidence</h1>
-        <div class="sub">Personalised 1-on-1 English lessons for students and learners who want to improve speaking, interview skills, and everyday communication.</div>
+        <div class="sub">Personalised 1-on-1 English lessons for students and learners who want to improve speaking, exam preparation, and practical communication.</div>
         <div class="btns">
           <a class="btn btn-primary" href="booking.html">Book a Lesson</a>
           <a class="btn btn-secondary" href="english_level_testen.html">Take a Free English Level Test</a>
         </div>
         <div class="mini-points">
-          <div>British English teacher</div>
-          <div>Friendly and supportive style</div>
-          <div>Speaking, interview and daily English</div>
-          <div>Suitable for students and learners</div>
+          <div>Native English teacher with a standard British accent</div>
+          <div>Friendly and supportive teaching style</div>
+          <div>TEFL qualified with 6 years of experience</div>
+          <div>English degree · all ages and levels welcome</div>
         </div>
       </div>
     </div>
@@ -226,19 +351,45 @@
   <section class="section">
     <div class="container">
       <h2 class="title">What you can learn</h2>
-      <p class="desc">Each lesson is designed to help you speak more naturally, build confidence, and use English more effectively in real-life situations.</p>
-      <div class="grid-3">
-        <div class="card">
-          <h3>Speaking English</h3>
-          <p>Build confidence in everyday conversations with practical speaking practice, useful vocabulary, and natural expressions.</p>
-        </div>
-        <div class="card">
-          <h3>Interview English</h3>
-          <p>Prepare for school or job interviews with clearer self-introductions, stronger answers, and more confident speaking.</p>
-        </div>
-        <div class="card">
-          <h3>Supportive Lessons</h3>
-          <p>Learn in a friendly and encouraging environment with lessons that are suitable for different levels and goals.</p>
+      <p class="desc">Lessons are practical, supportive, and focused on helping you use English more naturally in real situations.</p>
+
+      <div class="focus-panel">
+        <div class="focus-grid">
+          <div class="focus-item">
+            <span class="dot"></span>
+            <div>
+              <h3>Speaking English</h3>
+              <p>Build confidence in everyday conversations with guided practice, useful vocabulary, and natural expressions.</p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="dot"></span>
+            <div>
+              <h3>Exam Preparation</h3>
+              <p>Prepare for speaking tasks, written answers, vocabulary, and clearer communication in exam settings.</p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="dot"></span>
+            <div>
+              <h3>Real-Life Communication</h3>
+              <p>Improve practical English for daily life, travel, study, work, business English, and real communication needs.</p>
+              <div class="tag-list">
+                <span>Daily life</span>
+                <span>Travel</span>
+                <span>Study</span>
+                <span>Work</span>
+                <span>Business English</span>
+              </div>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="dot"></span>
+            <div>
+              <h3>Clear Progress</h3>
+              <p>Learn step by step with friendly correction and lessons that match your level and goals.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -246,29 +397,38 @@
 
   <section class="section">
     <div class="container">
-      <div class="grid-3">
-        <div class="card">
-          <h3>Speaking Practice</h3>
-          <p>Develop stronger fluency through practical exercises, guided correction, and useful conversation topics.</p>
-        </div>
-        <div class="card">
-          <h3>Real-Life Communication</h3>
-          <p>Improve the English you need for daily life, travel, study, and communication with confidence.</p>
-        </div>
-        <div class="card">
-          <h3>Clear Progress</h3>
-          <p>Build your skills step by step with lessons that focus on speaking clearly and using English naturally.</p>
-        </div>
+      <h2 class="title">How booking works</h2>
+      <p class="desc">A quick path from choosing a class to saving your confirmation.</p>
+
+      <div class="tiny-flow" aria-label="Booking steps">
+        <div class="bubble"><em>1</em>Choose a class</div>
+        <div class="tiny-arrow">→</div>
+        <div class="bubble"><em>2</em>Pick a time</div>
+        <div class="tiny-arrow">→</div>
+        <div class="bubble"><em>3</em>Confirm details</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="title">FAQ</h2>
+      <p class="desc">A few quick answers before you book.</p>
+      <div class="faq-grid">
+        <div class="faq-item"><strong>What should I book first?</strong><span>If you are a new student, start with the free trial class.</span></div>
+        <div class="faq-item"><strong>What if I do not know my level?</strong><span>You can take the free level test before booking.</span></div>
+        <div class="faq-item"><strong>How do regular lessons work?</strong><span>Regular lessons are for students who already have prepaid credits.</span></div>
+        <div class="faq-item"><strong>Can I change my booking?</strong><span>Use the private link from your confirmation page if you need to change or cancel.</span></div>
       </div>
     </div>
   </section>
 
   <section class="section">
     <div class="container cta">
-      <h2 style="margin-top:0;font-size:32px;">Book a Free Trial Class</h2>
-      <p>Start with a trial lesson and take the next step towards more confident English communication.</p>
+      <h2 style="margin-top:0;font-size:32px;">Book Your English Class</h2>
+      <p>Choose a free trial if you are new, or book a regular lesson if you already have lesson credits.</p>
       <div class="btns">
-        <a class="btn btn-primary" href="booking.html">Book a Lesson</a>
+        <a class="btn btn-primary" href="booking.html">Book a Class</a>
         <a class="btn btn-secondary" href="english_level_testen.html" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);color:white;">Take a Free English Level Test</a>
       </div>
     </div>

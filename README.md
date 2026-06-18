@@ -52,6 +52,8 @@ Set these in Netlify → Site configuration → Environment variables:
 - `WORK_START`
 - `WORK_END`
 - `SLOT_DURATION_MINUTES`
+- `MIN_LEAD_HOURS`
+- `MAX_DAYS_AHEAD`
 - `PRE_BUFFER_MINUTES`
 - `POST_BUFFER_MINUTES`
 - `MEETING_LOCATION`
@@ -96,9 +98,9 @@ Recommended workflow:
 3. `booking.html` detects the visitor's time zone.
 4. Visitor chooses a date.
 5. The frontend calls `/.netlify/functions/availability`.
-6. The function reads Google Calendar busy time and returns available slots.
+6. The function reads Google Calendar busy time and returns available slots within `MIN_LEAD_HOURS` and `MAX_DAYS_AHEAD`.
 7. Visitor chooses a slot and submits details.
 8. The frontend calls `/.netlify/functions/book`.
 9. The function checks Google Calendar again, creates an event, and appends a row to Google Sheets.
 10. Visitor lands on `success.html` and can open `manage-booking.html` through a private booking management link.
-11. If the lesson is more than `MIN_LEAD_HOURS` away, the visitor can change time or cancel online.
+11. If the lesson is more than `MIN_LEAD_HOURS` away and within `MAX_DAYS_AHEAD`, the visitor can change time or cancel online.

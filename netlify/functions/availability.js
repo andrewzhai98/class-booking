@@ -7,6 +7,7 @@ const SLOT_DURATION_MINUTES = Number(process.env.SLOT_DURATION_MINUTES || 15);
 const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MAX_DAYS_AHEAD = Number(process.env.MAX_DAYS_AHEAD || 14);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { message: "Method not allowed" });
@@ -26,11 +27,32 @@ exports.handler = async (event) => {
     if (!dayInTeacherTimezone.isValid) return json(400, { message: "Invalid date." });
 
     if (!workDays.includes(dayInTeacherTimezone.weekday)) {
-      return json(200, { date, timezone: visitorTimezone, slots: [] });
+      return json(200, {
+        date,
+        timezone: visitorTimezone,
+        teacherTimezone: DEFAULT_TIMEZONE,
+        slotDurationMinutes: SLOT_DURATION_MINUTES,
+        minLeadHours: MIN_LEAD_HOURS,
+        maxDaysAhead: MAX_DAYS_AHEAD,
+        slots: []
+      });
     }
 
     const startOfWork = setTime(dayInTeacherTimezone, process.env.WORK_START || "09:00");
     const endOfWork = setTime(dayInTeacherTimezone, process.env.WORK_END || "17:00");
+    const maxBookableDate = DateTime.now().setZone(DEFAULT_TIMEZONE).startOf("day").plus({ days: MAX_DAYS_AHEAD });
+
+    if (dayInTeacherTimezone.startOf("day") > maxBookableDate) {
+      return json(200, {
+        date,
+        timezone: visitorTimezone,
+        teacherTimezone: DEFAULT_TIMEZONE,
+        slotDurationMinutes: SLOT_DURATION_MINUTES,
+        minLeadHours: MIN_LEAD_HOURS,
+        maxDaysAhead: MAX_DAYS_AHEAD,
+        slots: []
+      });
+    }
 
     const auth = getAuthClient();
     const calendar = google.calendar({ version: "v3", auth });
@@ -59,7 +81,9 @@ exports.handler = async (event) => {
       date,
       timezone: visitorTimezone,
       teacherTimezone: DEFAULT_TIMEZONE,
+      slotDurationMinutes: SLOT_DURATION_MINUTES,
       minLeadHours: MIN_LEAD_HOURS,
+      maxDaysAhead: MAX_DAYS_AHEAD,
       slots
     });
   } catch (error) {

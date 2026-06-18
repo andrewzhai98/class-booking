@@ -79,7 +79,7 @@
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get("id") || "";
     const token = params.get("token") || "";
-    const state = { booking: null, selectedSlot: null };
+    const state = { booking: null, selectedSlot: null, maxDaysAhead: 14 };
     const els = {
       statusBadge: document.getElementById("statusBadge"),
       introText: document.getElementById("introText"),
@@ -98,14 +98,26 @@
     document.addEventListener("DOMContentLoaded", init);
 
     async function init() {
+      await loadPublicConfig();
       const today = new Date();
       els.newDate.min = toDateInput(today);
-      const max = new Date(); max.setDate(max.getDate() + 30);
+      const max = new Date(); max.setDate(max.getDate() + state.maxDaysAhead);
       els.newDate.max = toDateInput(max);
       els.changeBtn.addEventListener("click", () => els.changePanel.classList.toggle("hidden"));
       els.cancelBtn.addEventListener("click", cancelBooking);
       els.loadSlotsBtn.addEventListener("click", loadSlots);
       await loadBooking();
+    }
+
+    async function loadPublicConfig() {
+      try {
+        const res = await fetch("/.netlify/functions/config");
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        if (Number(data.maxDaysAhead) > 0) state.maxDaysAhead = Number(data.maxDaysAhead);
+      } catch (error) {
+        console.warn("Using default manage booking config.", error);
+      }
     }
 
     async function loadBooking() {

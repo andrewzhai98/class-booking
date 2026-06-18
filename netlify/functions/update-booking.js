@@ -6,6 +6,7 @@ const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MAX_DAYS_AHEAD = Number(process.env.MAX_DAYS_AHEAD || 14);
 const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 
@@ -141,7 +142,9 @@ exports.handler = async (event) => {
     const config = getClassConfig(booking.eventType);
     const newStart = DateTime.fromISO(payload.start, { zone: "utc" });
     if (!newStart.isValid) throw userError("Invalid new booking time.", 400);
-    if (newStart < DateTime.utc().plus({ hours: MIN_LEAD_HOURS })) throw userError(`Please choose a time at least ${MIN_LEAD_HOURS} hours in advance.`, 409);
+    const now = DateTime.utc();
+    if (newStart < now.plus({ hours: MIN_LEAD_HOURS })) throw userError(`Please choose a time at least ${MIN_LEAD_HOURS} hours in advance.`, 409);
+    if (newStart > now.plus({ days: MAX_DAYS_AHEAD })) throw userError(`Please choose a time within the next ${MAX_DAYS_AHEAD} days.`, 409);
     const newEnd = newStart.plus({ minutes: config.durationMinutes });
 
     const busyResponse = await calendar.freebusy.query({

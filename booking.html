@@ -599,10 +599,12 @@
               <select id="goal" name="goal">
                 <option value="">Please select</option>
                 <option value="Speaking practice">Speaking practice</option>
-                <option value="Interview English">Interview English</option>
+                <option value="Exam Preparation">Exam Preparation</option>
                 <option value="Daily communication">Daily communication</option>
-                <option value="Study abroad">Study abroad</option>
                 <option value="Travel English">Travel English</option>
+                <option value="Study">Study</option>
+                <option value="Work English">Work English</option>
+                <option value="Business English">Business English</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -626,7 +628,8 @@
 
   <script>
     const CONFIG = {
-      maxDaysAhead: 30,
+      maxDaysAhead: 14,
+      configEndpoint: "/.netlify/functions/config",
       availabilityEndpoint: "/.netlify/functions/availability",
       bookingEndpoint: "/.netlify/functions/book",
       previewFallback: true,
@@ -692,7 +695,8 @@
 
     document.addEventListener("DOMContentLoaded", init);
 
-    function init() {
+    async function init() {
+      await loadPublicConfig();
       state.currentMonth = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
       elements.timezoneText.textContent = state.timezone;
       renderWeekdays();
@@ -707,6 +711,20 @@
       elements.classButtons.forEach(button => {
         button.addEventListener("click", () => selectClass(button.getAttribute("data-class-type")));
       });
+    }
+
+    async function loadPublicConfig() {
+      try {
+        const response = await fetch(CONFIG.configEndpoint);
+        if (!response.ok) return;
+        const data = await response.json().catch(() => ({}));
+        if (Number(data.maxDaysAhead) > 0) CONFIG.maxDaysAhead = Number(data.maxDaysAhead);
+        if (Number(data.slotDurationMinutes) > 0) CONFIG.slotIntervalMinutes = Number(data.slotDurationMinutes);
+        if (Number(data.freeTrialDurationMinutes) > 0) CONFIG.classTypes["free-trial"].durationMinutes = Number(data.freeTrialDurationMinutes);
+        if (Number(data.regularLessonDurationMinutes) > 0) CONFIG.classTypes["regular-lesson"].durationMinutes = Number(data.regularLessonDurationMinutes);
+      } catch (error) {
+        console.warn("Using default booking config.", error);
+      }
     }
 
     function renderWeekdays() {

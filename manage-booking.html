@@ -231,8 +231,18 @@
 
     function setNotice(el, type, message, show) { el.className = `notice ${type}${show ? " show" : ""}`; el.textContent = message || ""; }
     function toDateInput(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`; }
-    function formatTime(iso) { return new Intl.DateTimeFormat("en", { hour:"numeric", minute:"2-digit" }).format(new Date(iso)); }
-    function formatRange(start, end) { return `${new Intl.DateTimeFormat("en", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }).format(new Date(start))} - ${formatTime(end)}`; }
+    function formatTime(iso) { return formatInBookingTimezone(new Date(iso), { hour:"numeric", minute:"2-digit" }); }
+    function formatRange(start, end) { return `${formatInBookingTimezone(new Date(start), { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })} - ${formatTime(end)}`; }
+    function formatInBookingTimezone(date, options) {
+      const safeOptions = { ...options };
+      const timezone = state.booking?.timezone;
+      if (timezone) safeOptions.timeZone = timezone;
+      try {
+        return new Intl.DateTimeFormat("en", safeOptions).format(date);
+      } catch (error) {
+        return new Intl.DateTimeFormat("en", options).format(date);
+      }
+    }
     function addMinutesIso(iso, minutes) { const d = new Date(iso); d.setMinutes(d.getMinutes()+minutes); return d.toISOString(); }
     function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
   </script>

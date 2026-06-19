@@ -336,13 +336,22 @@
     .day.selected { color:white; border-color:transparent; background:linear-gradient(90deg,var(--primary),var(--primary2)); }
 
     .timezone-row {
-      display:flex;
-      gap:10px;
-      align-items:center;
       color:var(--muted);
       font-size:13px;
       margin:14px 0 18px;
-      line-height:1.5;
+      line-height:1.55;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+
+    .timezone-row strong {
+      color:var(--text);
+    }
+
+    .timezone-row span {
+      display:block;
     }
 
     .slots {
@@ -543,8 +552,8 @@
             <div class="calendar-grid" id="calendarGrid"></div>
 
             <div class="timezone-row">
-              <span>Detected time zone:</span>
-              <strong id="timezoneText"></strong>
+              <span>Times are shown in your current time zone: <strong id="timezoneText"></strong></span>
+              <span>Teacher availability is automatically converted. Please choose a time based on the time shown here.</span>
             </div>
 
             <div id="dateNotice" class="notice info show">
@@ -555,6 +564,10 @@
           <div id="timePanel" class="hidden">
             <h2>Available times</h2>
             <p class="sub" id="selectedDateText"></p>
+            <div class="timezone-row">
+              <span>Times are shown in your current time zone: <strong id="timePanelTimezoneText"></strong></span>
+              <span>Teacher availability is automatically converted. Please choose a time based on the time shown here.</span>
+            </div>
             <div id="slots" class="slots"></div>
             <div id="slotNotice" class="notice info show">
               Loading available times...
@@ -672,6 +685,7 @@
       weekdayGrid: document.getElementById("weekdayGrid"),
       calendarGrid: document.getElementById("calendarGrid"),
       timezoneText: document.getElementById("timezoneText"),
+      timePanelTimezoneText: document.getElementById("timePanelTimezoneText"),
       classPanel: document.getElementById("classPanel"),
       classNotice: document.getElementById("classNotice"),
       classButtons: document.querySelectorAll(".class-option"),
@@ -699,6 +713,7 @@
       await loadPublicConfig();
       state.currentMonth = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
       elements.timezoneText.textContent = state.timezone;
+      elements.timePanelTimezoneText.textContent = state.timezone;
       renderWeekdays();
       renderCalendar();
       elements.prevMonthBtn.addEventListener("click", goToPreviousMonth);
@@ -1038,8 +1053,17 @@
     function toDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
     function parseDateKey(dateKey) { const [year, month, day] = dateKey.split("-").map(Number); return new Date(year, month - 1, day); }
     function formatDate(date) { return new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(date); }
-    function formatTime(isoString) { return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
-    function formatDateTime(isoString) { return new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(isoString)); }
+    function formatTime(isoString) { return formatInSelectedTimezone(new Date(isoString), { hour: "numeric", minute: "2-digit" }); }
+    function formatDateTime(isoString) { return formatInSelectedTimezone(new Date(isoString), { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+    function formatInSelectedTimezone(date, options) {
+      const safeOptions = { ...options };
+      if (state.timezone) safeOptions.timeZone = state.timezone;
+      try {
+        return new Intl.DateTimeFormat("en", safeOptions).format(date);
+      } catch (error) {
+        return new Intl.DateTimeFormat("en", options).format(date);
+      }
+    }
     function formatDateTimeRange(startIso, endIso) { return `${formatDateTime(startIso)} - ${formatTime(endIso)}`; }
     function addMinutesIso(isoString, minutes) { const date = new Date(isoString); date.setMinutes(date.getMinutes() + minutes); return date.toISOString(); }
   </script>

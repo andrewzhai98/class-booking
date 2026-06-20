@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
+const { sendBookingCancelledEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -35,6 +36,14 @@ function getGoogleAuth() {
     key: privateKey,
     scopes: ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/spreadsheets"]
   });
+}
+
+async function sendEmailSafely(sendFn, bookingId, type) {
+  try {
+    await sendFn();
+  } catch (error) {
+    console.error(`Email failed for ${type} ${bookingId}`, error);
+  }
 }
 
 function normalizeEmail(email) { return String(email || "").trim().toLowerCase(); }
@@ -172,6 +181,12 @@ exports.handler = async (event) => {
         refunded = true;
       }
     }
+
+    await sendEmailSafely(() => sendBookingCancelledEmail({
+      booking,
+      classConfig: config,
+      refunded
+    }), booking.bookingId, "booking_cancelled");
 
     return json(200, { ok: true, message: "Booking cancelled.", refunded });
   } catch (error) {

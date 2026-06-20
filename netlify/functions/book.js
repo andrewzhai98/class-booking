@@ -1,6 +1,7 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const crypto = require("crypto");
+const { sendBookingConfirmationEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -155,6 +156,20 @@ exports.handler = async (event) => {
         });
       }
     }
+
+    await sendEmailSafely(() => sendBookingConfirmationEmail({
+      booking: {
+        bookingId,
+        name: payload.name,
+        email: payload.email,
+        startTime: start.toISO(),
+        endTime: end.toISO(),
+        timezone: payload.timezone,
+        manageLink
+      },
+      classConfig,
+      manageLink
+    }), bookingId, "booking_confirmation");
 
     return json(200, {
       ok: true,
@@ -407,6 +422,14 @@ function buildDescription(payload, bookingId, classConfig, manageToken, manageLi
     `Notes: ${payload.notes || ""}`,
     `Source: ${payload.source || "booking.html"}`
   ].join("\n");
+}
+
+async function sendEmailSafely(sendFn, bookingId, type) {
+  try {
+    await sendFn();
+  } catch (error) {
+    console.error(`Email failed for ${type} ${bookingId}`, error);
+  }
 }
 
 function buildAttendees(studentEmail) {

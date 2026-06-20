@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
+const { sendBookingUpdatedEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -26,6 +27,14 @@ const CLASS_TYPES = {
     requiresCredits: true
   }
 };
+
+async function sendEmailSafely(sendFn, bookingId, type) {
+  try {
+    await sendFn();
+  } catch (error) {
+    console.error(`Email failed for ${type} ${bookingId}`, error);
+  }
+}
 
 function getGoogleAuth() {
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -209,6 +218,16 @@ Updated booking time from ${booking.startTime} to ${newStart.toISO()}`.trim()
         booking.changeCount + 1
       ]] }
     });
+
+    await sendEmailSafely(() => sendBookingUpdatedEmail({
+      booking: {
+        ...booking,
+        startTime: newStart.toISO(),
+        endTime: newEnd.toISO()
+      },
+      classConfig: config,
+      manageLink: booking.manageLink
+    }), booking.bookingId, "booking_updated");
 
     return json(200, { ok: true, message: "Booking updated.", start: newStart.toISO(), end: newEnd.toISO() });
   } catch (error) {

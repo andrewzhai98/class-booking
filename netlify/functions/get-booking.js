@@ -8,7 +8,7 @@ const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
 const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
 const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
-const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
+const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || 12);
 
 const CLASS_TYPES = {
   "free-trial": {

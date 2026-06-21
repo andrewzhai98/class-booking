@@ -7,7 +7,7 @@ const TEACHER_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const SITE_URL = process.env.SITE_URL || "";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 const BOOKING_PAGE_URL = process.env.BOOKING_PAGE_URL || (SITE_URL ? `${SITE_URL.replace(/\/$/, "")}/booking.html` : "booking.html");
-const CANCELLATION_POLICY_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
+const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || 12);
 
 async function sendBookingConfirmationEmail({ booking, classConfig, manageLink }) {
   return sendBookingEmail({
@@ -233,7 +233,7 @@ function buildEmailText({ heading, intro, booking, classConfig, manageLink, acti
     manageLink ? `Manage booking: ${manageLink}` : "",
     actionUrl && actionUrl !== manageLink ? `Link: ${actionUrl}` : "",
     "",
-    `Cancellation policy: You can cancel your lesson online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson. If it is less than ${CANCELLATION_POLICY_HOURS} hours before the lesson, please contact the teacher directly.`,
+    `Cancellation policy: You can cancel your lesson online no less than ${MANAGE_CUTOFF_HOURS} hours before the lesson. If it is less than ${MANAGE_CUTOFF_HOURS} hours before the lesson, please contact the teacher directly.`,
     "",
     "English with Becky"
   ].filter(Boolean).join("\n");
@@ -245,7 +245,7 @@ function buildTeacherEmailHtml({ heading, intro, booking, classConfig, manageLin
     ["Time zone", TEACHER_TIMEZONE],
     ["Class", classConfig.title],
     ["Duration", `${classConfig.durationMinutes} minutes`],
-    ["Cancellation policy", `Students can cancel online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson.`],
+    ["Cancellation policy", `Students can cancel online no less than ${MANAGE_CUTOFF_HOURS} hours before the lesson.`],
     ...statusRows
   ];
 
@@ -320,7 +320,7 @@ function policyHtml() {
   return `
     <div style="margin-top:22px;background:#faf5ff;border:1px solid #ede9fe;border-radius:18px;padding:16px;">
       <p style="margin:0 0 6px;color:#111827;font-weight:900;">Cancellation policy</p>
-      <p style="margin:0;color:#4b5563;line-height:1.6;">You can cancel your lesson online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson. If it is less than ${CANCELLATION_POLICY_HOURS} hours before the lesson, please contact the teacher directly.</p>
+      <p style="margin:0;color:#4b5563;line-height:1.6;">You can cancel your lesson online no less than ${MANAGE_CUTOFF_HOURS} hours before the lesson. If it is less than ${MANAGE_CUTOFF_HOURS} hours before the lesson, please contact the teacher directly.</p>
     </div>
   `;
 }

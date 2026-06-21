@@ -1,7 +1,7 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const crypto = require("crypto");
-const { sendBookingConfirmationEmail } = require("./email");
+const { sendBookingConfirmationEmail, sendTeacherNewBookingEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -157,19 +157,31 @@ exports.handler = async (event) => {
       }
     }
 
+    const emailBooking = {
+      bookingId,
+      name: payload.name,
+      email: payload.email,
+      contact: payload.contact || "",
+      studentLevel: payload.studentLevel || "",
+      goal: payload.goal || "",
+      notes: payload.notes || "",
+      startTime: start.toISO(),
+      endTime: end.toISO(),
+      timezone: payload.timezone,
+      manageLink
+    };
+
     await sendEmailSafely(() => sendBookingConfirmationEmail({
-      booking: {
-        bookingId,
-        name: payload.name,
-        email: payload.email,
-        startTime: start.toISO(),
-        endTime: end.toISO(),
-        timezone: payload.timezone,
-        manageLink
-      },
+      booking: emailBooking,
       classConfig,
       manageLink
     }), bookingId, "booking_confirmation");
+
+    await sendEmailSafely(() => sendTeacherNewBookingEmail({
+      booking: emailBooking,
+      classConfig,
+      manageLink
+    }), bookingId, "teacher_new_booking");
 
     return json(200, {
       ok: true,

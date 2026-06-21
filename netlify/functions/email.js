@@ -2,9 +2,12 @@ const { DateTime } = require("luxon");
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "English with Becky <onboarding@resend.dev>";
+const TEACHER_NOTIFICATION_EMAIL = process.env.TEACHER_NOTIFICATION_EMAIL || process.env.TEACHER_EMAIL || "";
+const TEACHER_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const SITE_URL = process.env.SITE_URL || "";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 const BOOKING_PAGE_URL = process.env.BOOKING_PAGE_URL || (SITE_URL ? `${SITE_URL.replace(/\/$/, "")}/booking.html` : "booking.html");
+const CANCELLATION_POLICY_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
 
 async function sendBookingConfirmationEmail({ booking, classConfig, manageLink }) {
   return sendBookingEmail({
@@ -36,6 +39,21 @@ async function sendBookingUpdatedEmail({ booking, classConfig, manageLink }) {
   });
 }
 
+async function sendBookingReminderEmail({ booking, classConfig, manageLink }) {
+  return sendBookingEmail({
+    to: booking.email,
+    subject: "Reminder: your English lesson is today",
+    heading: "Your English lesson is coming up",
+    intro: "Just a friendly reminder that you have an English lesson today. Your teacher will send you the meeting link before the lesson.",
+    booking,
+    classConfig,
+    manageLink,
+    actionText: "View or manage your booking",
+    actionUrl: manageLink,
+    extraHtml: policyHtml()
+  });
+}
+
 async function sendBookingCancelledEmail({ booking, classConfig, refunded }) {
   const creditMessage = classConfig.creditCost > 0
     ? (refunded ? "Your lesson credit has been returned." : "If this lesson used credits, please contact the teacher if you have any questions about your credit balance.")
@@ -55,7 +73,66 @@ async function sendBookingCancelledEmail({ booking, classConfig, refunded }) {
   });
 }
 
+async function sendTeacherNewBookingEmail({ booking, classConfig, manageLink }) {
+  return sendTeacherEmail({
+    subject: `New booking: ${classConfig.title}`,
+    heading: `New booking: ${classConfig.title}`,
+    intro: "A student has booked a lesson.",
+    booking,
+    classConfig,
+    manageLink,
+    timeLabel: "Lesson time"
+  });
+}
+
+async function sendTeacherBookingUpdatedEmail({ booking, classConfig, previousStartTime, previousEndTime, manageLink }) {
+  return sendTeacherEmail({
+    subject: `Booking updated: ${classConfig.title}`,
+    heading: `Booking updated: ${classConfig.title}`,
+    intro: "A student has updated their booking time.",
+    booking,
+    classConfig,
+    manageLink,
+    timeLabel: "New lesson time",
+    previousStartTime,
+    previousEndTime
+  });
+}
+
+async function sendTeacherBookingCancelledEmail({ booking, classConfig, refunded, manageLink }) {
+  return sendTeacherEmail({
+    subject: `Booking cancelled: ${classConfig.title}`,
+    heading: `Booking cancelled: ${classConfig.title}`,
+    intro: "A student has cancelled a booking.",
+    booking,
+    classConfig,
+    manageLink,
+    timeLabel: "Cancelled lesson time",
+    statusRows: [["Credit refunded", refunded ? "Yes" : "No"]]
+  });
+}
+
+async function sendTeacherEmail({ subject, heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows = [] }) {
+  if (!TEACHER_NOTIFICATION_EMAIL) {
+    console.warn("Teacher email skipped: TEACHER_NOTIFICATION_EMAIL is not set.");
+    return { skipped: true, reason: "missing_teacher_email" };
+  }
+
+  return sendRawEmail({
+    to: TEACHER_NOTIFICATION_EMAIL,
+    subject,
+    html: buildTeacherEmailHtml({ heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows }),
+    text: buildTeacherEmailText({ heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows })
+  });
+}
+
 async function sendBookingEmail({ to, subject, heading, intro, booking, classConfig, manageLink, actionText, actionUrl, extraHtml = "" }) {
+  const html = buildEmailHtml({ heading, intro, booking, classConfig, manageLink, actionText, actionUrl, extraHtml });
+  const text = buildEmailText({ heading, intro, booking, classConfig, manageLink, actionUrl });
+  return sendRawEmail({ to, subject, html, text });
+}
+
+async function sendRawEmail({ to, subject, html, text }) {
   if (!RESEND_API_KEY) {
     console.warn("Email skipped: RESEND_API_KEY is not set.");
     return { skipped: true, reason: "missing_api_key" };
@@ -65,9 +142,6 @@ async function sendBookingEmail({ to, subject, heading, intro, booking, classCon
     console.warn("Email skipped: recipient email is missing.");
     return { skipped: true, reason: "missing_recipient" };
   }
-
-  const html = buildEmailHtml({ heading, intro, booking, classConfig, manageLink, actionText, actionUrl, extraHtml });
-  const text = buildEmailText({ heading, intro, booking, classConfig, manageLink, actionUrl });
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -159,17 +233,94 @@ function buildEmailText({ heading, intro, booking, classConfig, manageLink, acti
     manageLink ? `Manage booking: ${manageLink}` : "",
     actionUrl && actionUrl !== manageLink ? `Link: ${actionUrl}` : "",
     "",
-    `Policy: You can change or cancel your booking online up to ${MIN_LEAD_HOURS} hours before the lesson. If it is less than ${MIN_LEAD_HOURS} hours before the lesson, please contact the teacher directly.`,
+    `Cancellation policy: You can cancel your lesson online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson. If it is less than ${CANCELLATION_POLICY_HOURS} hours before the lesson, please contact the teacher directly.`,
     "",
     "English with Becky"
   ].filter(Boolean).join("\n");
 }
 
+function buildTeacherEmailHtml({ heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows }) {
+  const lessonRows = [
+    [timeLabel, formatRange(booking.startTime, booking.endTime, TEACHER_TIMEZONE)],
+    ["Time zone", TEACHER_TIMEZONE],
+    ["Class", classConfig.title],
+    ["Duration", `${classConfig.durationMinutes} minutes`],
+    ["Cancellation policy", `Students can cancel online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson.`],
+    ...statusRows
+  ];
+
+  if (previousStartTime && previousEndTime) {
+    lessonRows.unshift(["Previous lesson time", formatRange(previousStartTime, previousEndTime, TEACHER_TIMEZONE)]);
+  }
+
+  const studentRows = [
+    ["Name", booking.name || ""],
+    ["Email", booking.email || ""],
+    ["Contact", booking.contact || ""],
+    ["Level", booking.studentLevel || ""],
+    ["Goal", booking.goal || ""],
+    ["Notes", booking.notes || ""]
+  ].filter(([, value]) => String(value || "").trim());
+
+  const adminRows = [
+    ["Booking ID", booking.bookingId || ""],
+    ["Manage link", manageLink || booking.manageLink || ""]
+  ].filter(([, value]) => String(value || "").trim());
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#111827;">
+    <div style="max-width:680px;margin:0 auto;padding:28px 16px;">
+      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:24px;padding:28px;box-shadow:0 12px 32px rgba(17,24,39,.08);">
+        <div style="display:inline-block;background:#fdf2f8;color:#be185d;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:900;margin-bottom:14px;">Teacher notification</div>
+        <h1 style="margin:0 0 12px;font-size:28px;line-height:1.15;">${escapeHtml(heading)}</h1>
+        <p style="margin:0 0 18px;color:#4b5563;line-height:1.6;">${escapeHtml(intro)}</p>
+        ${tableHtml("Lesson details", lessonRows)}
+        ${tableHtml("Student details", studentRows)}
+        ${tableHtml("Admin details", adminRows)}
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+function buildTeacherEmailText({ heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows }) {
+  const lines = [heading, "", intro, "", "Lesson details:"];
+  if (previousStartTime && previousEndTime) lines.push(`Previous lesson time: ${formatRange(previousStartTime, previousEndTime, TEACHER_TIMEZONE)}`);
+  lines.push(`${timeLabel}: ${formatRange(booking.startTime, booking.endTime, TEACHER_TIMEZONE)}`);
+  lines.push(`Time zone: ${TEACHER_TIMEZONE}`);
+  lines.push(`Class: ${classConfig.title}`);
+  lines.push(`Duration: ${classConfig.durationMinutes} minutes`);
+  for (const [label, value] of statusRows) lines.push(`${label}: ${value}`);
+  lines.push("", "Student details:");
+  for (const [label, value] of [["Name", booking.name], ["Email", booking.email], ["Contact", booking.contact], ["Level", booking.studentLevel], ["Goal", booking.goal], ["Notes", booking.notes]]) {
+    if (String(value || "").trim()) lines.push(`${label}: ${value}`);
+  }
+  lines.push("", "Admin details:", `Booking ID: ${booking.bookingId || ""}`);
+  const finalManageLink = manageLink || booking.manageLink || "";
+  if (finalManageLink) lines.push(`Manage link: ${finalManageLink}`);
+  return lines.filter(Boolean).join("\n");
+}
+
+function tableHtml(title, rows) {
+  if (!rows.length) return "";
+  const body = rows.map(([label, value]) => `
+    <tr>
+      <td style="padding:9px 0;color:#6b7280;font-weight:700;width:34%;vertical-align:top;">${escapeHtml(label)}</td>
+      <td style="padding:9px 0;color:#111827;font-weight:800;vertical-align:top;overflow-wrap:anywhere;">${escapeHtml(value)}</td>
+    </tr>
+  `).join("");
+  return `
+    <h2 style="margin:22px 0 8px;font-size:18px;">${escapeHtml(title)}</h2>
+    <table role="presentation" width="100%" style="border-collapse:collapse;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">${body}</table>
+  `;
+}
+
 function policyHtml() {
   return `
     <div style="margin-top:22px;background:#faf5ff;border:1px solid #ede9fe;border-radius:18px;padding:16px;">
-      <p style="margin:0 0 6px;color:#111827;font-weight:900;">Booking policy</p>
-      <p style="margin:0;color:#4b5563;line-height:1.6;">You can change or cancel your booking online up to ${MIN_LEAD_HOURS} hours before the lesson. If it is less than ${MIN_LEAD_HOURS} hours before the lesson, please contact the teacher directly.</p>
+      <p style="margin:0 0 6px;color:#111827;font-weight:900;">Cancellation policy</p>
+      <p style="margin:0;color:#4b5563;line-height:1.6;">You can cancel your lesson online up to ${CANCELLATION_POLICY_HOURS} hours before the lesson. If it is less than ${CANCELLATION_POLICY_HOURS} hours before the lesson, please contact the teacher directly.</p>
     </div>
   `;
 }
@@ -198,5 +349,9 @@ function escapeAttribute(value) {
 module.exports = {
   sendBookingConfirmationEmail,
   sendBookingUpdatedEmail,
-  sendBookingCancelledEmail
+  sendBookingCancelledEmail,
+  sendBookingReminderEmail,
+  sendTeacherNewBookingEmail,
+  sendTeacherBookingUpdatedEmail,
+  sendTeacherBookingCancelledEmail
 };

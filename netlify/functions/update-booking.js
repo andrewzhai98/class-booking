@@ -1,12 +1,13 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
-const { sendBookingUpdatedEmail } = require("./email");
+const { sendBookingUpdatedEmail, sendTeacherBookingUpdatedEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
 const MAX_DAYS_AHEAD = Number(process.env.MAX_DAYS_AHEAD || 14);
 const PRE_BUFFER_MINUTES = Number(process.env.PRE_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
 const POST_BUFFER_MINUTES = Number(process.env.POST_BUFFER_MINUTES ?? process.env.BUFFER_MINUTES ?? 15);
@@ -108,7 +109,7 @@ async function patchEventIfPresent(calendar, eventId, start, end, timezone, send
 function canManageBooking(booking) {
   if (booking.status !== "confirmed") return false;
   const start = DateTime.fromISO(booking.startTime, { zone: "utc" });
-  return start.isValid && start > DateTime.utc().plus({ hours: MIN_LEAD_HOURS });
+  return start.isValid && start > DateTime.utc().plus({ hours: MANAGE_CUTOFF_HOURS });
 }
 
 function publicBooking(booking) {
@@ -146,7 +147,7 @@ exports.handler = async (event) => {
     const calendar = google.calendar({ version: "v3", auth });
     const bookings = await getBookings(sheets);
     const booking = findBooking(bookings, bookingId, token);
-    if (!canManageBooking(booking)) throw userError(`This booking can no longer be changed online within ${MIN_LEAD_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
+    if (!canManageBooking(booking)) throw userError(`This booking can no longer be changed online within ${MANAGE_CUTOFF_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
 
     const config = getClassConfig(booking.eventType);
     const newStart = DateTime.fromISO(payload.start, { zone: "utc" });
@@ -219,15 +220,25 @@ Updated booking time from ${booking.startTime} to ${newStart.toISO()}`.trim()
       ]] }
     });
 
+    const updatedBookingForEmail = {
+      ...booking,
+      startTime: newStart.toISO(),
+      endTime: newEnd.toISO()
+    };
+
     await sendEmailSafely(() => sendBookingUpdatedEmail({
-      booking: {
-        ...booking,
-        startTime: newStart.toISO(),
-        endTime: newEnd.toISO()
-      },
+      booking: updatedBookingForEmail,
       classConfig: config,
       manageLink: booking.manageLink
     }), booking.bookingId, "booking_updated");
+
+    await sendEmailSafely(() => sendTeacherBookingUpdatedEmail({
+      booking: updatedBookingForEmail,
+      classConfig: config,
+      previousStartTime: booking.startTime,
+      previousEndTime: booking.endTime,
+      manageLink: booking.manageLink
+    }), booking.bookingId, "teacher_booking_updated");
 
     return json(200, { ok: true, message: "Booking updated.", start: newStart.toISO(), end: newEnd.toISO() });
   } catch (error) {

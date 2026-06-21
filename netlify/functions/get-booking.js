@@ -8,6 +8,7 @@ const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
 const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
 const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
 
 const CLASS_TYPES = {
   "free-trial": {
@@ -85,7 +86,7 @@ function getClassConfig(eventType) {
 function canManageBooking(booking) {
   if (booking.status !== "confirmed") return false;
   const start = DateTime.fromISO(booking.startTime, { zone: "utc" });
-  return start.isValid && start > DateTime.utc().plus({ hours: MIN_LEAD_HOURS });
+  return start.isValid && start > DateTime.utc().plus({ hours: MANAGE_CUTOFF_HOURS });
 }
 
 function publicBooking(booking) {
@@ -119,7 +120,7 @@ exports.handler = async (event) => {
     const auth = getGoogleAuth();
     const sheets = google.sheets({ version: "v4", auth });
     const booking = findBooking(await getBookings(sheets), bookingId, token);
-    return json(200, { ok: true, booking: publicBooking(booking), canManage: canManageBooking(booking), cutoffHours: MIN_LEAD_HOURS });
+    return json(200, { ok: true, booking: publicBooking(booking), canManage: canManageBooking(booking), cutoffHours: MANAGE_CUTOFF_HOURS });
   } catch (error) {
     console.error("get-booking error", error);
     return json(error.statusCode || 500, { message: error.message || "Could not load booking." });

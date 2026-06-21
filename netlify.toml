@@ -6,6 +6,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions."send-reminders"]
+  schedule = "@hourly"
+
 [[redirects]]
   from = "/booking"
   to = "/booking.html"

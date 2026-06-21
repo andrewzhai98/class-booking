@@ -1,6 +1,6 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
-const { sendBookingCancelledEmail } = require("./email");
+const { sendBookingCancelledEmail, sendTeacherBookingCancelledEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -9,6 +9,7 @@ const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
 const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
 const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
+const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || process.env.CANCELLATION_CUTOFF_HOURS || 12);
 
 const CLASS_TYPES = {
   "free-trial": {
@@ -94,7 +95,7 @@ function getClassConfig(eventType) {
 function canManageBooking(booking) {
   if (booking.status !== "confirmed") return false;
   const start = DateTime.fromISO(booking.startTime, { zone: "utc" });
-  return start.isValid && start > DateTime.utc().plus({ hours: MIN_LEAD_HOURS });
+  return start.isValid && start > DateTime.utc().plus({ hours: MANAGE_CUTOFF_HOURS });
 }
 
 function publicBooking(booking) {
@@ -132,7 +133,7 @@ exports.handler = async (event) => {
     const calendar = google.calendar({ version: "v3", auth });
     const bookings = await getBookings(sheets);
     const booking = findBooking(bookings, bookingId, token);
-    if (!canManageBooking(booking)) throw userError(`This booking can no longer be cancelled online within ${MIN_LEAD_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
+    if (!canManageBooking(booking)) throw userError(`This booking can no longer be cancelled online within ${MANAGE_CUTOFF_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
 
     const config = getClassConfig(booking.eventType);
     if (booking.calendarEventId) {
@@ -187,6 +188,13 @@ exports.handler = async (event) => {
       classConfig: config,
       refunded
     }), booking.bookingId, "booking_cancelled");
+
+    await sendEmailSafely(() => sendTeacherBookingCancelledEmail({
+      booking,
+      classConfig: config,
+      refunded,
+      manageLink: booking.manageLink
+    }), booking.bookingId, "teacher_booking_cancelled");
 
     return json(200, { ok: true, message: "Booking cancelled.", refunded });
   } catch (error) {

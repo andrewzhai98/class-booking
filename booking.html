@@ -192,6 +192,26 @@
       color:white;
     }
 
+    .trial-approval-panel {
+      display:none;
+      margin:0 0 18px;
+      padding:16px;
+      border:1px solid #f3e8ff;
+      border-radius:20px;
+      background:linear-gradient(180deg,#faf5ff 0%,#fff 100%);
+    }
+
+    .trial-approval-panel.visible {
+      display:block;
+    }
+
+    .trial-approval-panel p {
+      margin:0 0 12px;
+      color:#4b5563;
+      font-size:14px;
+      line-height:1.55;
+    }
+
     .summary-row {
       display:flex;
       align-items:center;
@@ -523,7 +543,7 @@
                 <div class="class-meta">
                   <span class="class-pill">15 min</span>
                   <span class="class-pill">Free</span>
-                  <span class="class-pill">One trial per email</span>
+                  <span class="class-pill">Approval required</span>
                 </div>
               </button>
               <button class="class-option" type="button" data-class-type="regular-lesson">
@@ -535,6 +555,10 @@
                   <span class="class-pill">Prepaid package</span>
                 </div>
               </button>
+            </div>
+            <div id="trialApprovalPanel" class="trial-approval-panel">
+              <p><strong>Free trial requests need teacher approval.</strong></p>
+              <p>Your selected time is a request only. The class is not confirmed until the teacher approves it and sends a confirmation email.</p>
             </div>
             <div id="classNotice" class="notice info show">Please choose a class type to continue.</div>
           </div>
@@ -688,6 +712,7 @@
       timePanelTimezoneText: document.getElementById("timePanelTimezoneText"),
       classPanel: document.getElementById("classPanel"),
       classNotice: document.getElementById("classNotice"),
+      trialApprovalPanel: document.getElementById("trialApprovalPanel"),
       classButtons: document.querySelectorAll(".class-option"),
       timePanel: document.getElementById("timePanel"),
       datePanel: document.getElementById("datePanel"),
@@ -814,7 +839,10 @@
 
       elements.selectedClassText.textContent = selected.label;
       elements.selectedDurationText.textContent = `${selected.durationMinutes} minutes`;
-      elements.selectedCreditText.textContent = `${selected.creditCost} credit${selected.creditCost === 1 ? "" : "s"}`;
+      elements.selectedCreditText.textContent = selected.creditCost === 0 ? "Free trial" : `${selected.creditCost} credit${selected.creditCost === 1 ? "" : "s"}`;
+      const isFreeTrial = selected.eventType === "free-trial";
+      elements.trialApprovalPanel?.classList.toggle("visible", isFreeTrial);
+      elements.submitBtn.textContent = isFreeTrial ? "Submit Trial Request" : "Confirm Booking";
       elements.selectedTimeText.textContent = "Not selected yet";
       showDatePanel();
     }
@@ -935,9 +963,11 @@
         return;
       }
 
+      const isFreeTrial = payload.eventType === "free-trial";
+
       elements.submitBtn.disabled = true;
-      elements.submitBtn.textContent = "Confirming...";
-      setNotice(elements.formNotice, "info", "Checking calendar and confirming your booking...", true);
+      elements.submitBtn.textContent = isFreeTrial ? "Submitting request..." : "Confirming...";
+      setNotice(elements.formNotice, "info", isFreeTrial ? "Submitting your free trial request..." : "Checking calendar and confirming your booking...", true);
 
       try {
         const response = await fetch(CONFIG.bookingEndpoint, {
@@ -949,7 +979,8 @@
         if (!response.ok) {
           throw new Error(result.message || `Booking failed. HTTP status: ${response.status}. Please check the terminal logs.`);
         }
-        setNotice(elements.formNotice, "success", "Your booking has been confirmed.", true);
+        const resultStatus = result.status || (isFreeTrial ? "pending_approval" : "confirmed");
+        setNotice(elements.formNotice, "success", resultStatus === "pending_approval" ? "Your free trial request has been received." : "Your booking has been confirmed.", true);
         const successParams = new URLSearchParams({
           name: payload.name,
           bookingId: result.bookingId || "",
@@ -960,13 +991,14 @@
           creditCost: String(result.creditCost ?? state.selectedClass.creditCost),
           time: result.start || payload.start,
           end: result.end || payload.end,
-          timezone: result.timezone || payload.timezone
+          timezone: result.timezone || payload.timezone,
+          status: resultStatus
         });
         setTimeout(() => { window.location.href = `success.html?${successParams.toString()}`; }, 700);
       } catch (error) {
         setNotice(elements.formNotice, "error", error.message || "Booking failed. Please try again.", true);
         elements.submitBtn.disabled = false;
-        elements.submitBtn.textContent = "Confirm Booking";
+        elements.submitBtn.textContent = state.selectedClass?.eventType === "free-trial" ? "Submit Trial Request" : "Confirm Booking";
       }
     }
 

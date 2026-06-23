@@ -267,14 +267,14 @@
   <main class="shell">
     <section class="hero">
       <div class="check">✓</div>
-      <div class="eyebrow">Booking confirmed</div>
-      <h1>You're all set</h1>
+      <div class="eyebrow" id="eyebrowText">Booking confirmed</div>
+      <h1 id="heroTitle">You're all set</h1>
       <p class="subtitle" id="subtitleText">Your lesson has been booked. Please save the details below before closing this page.</p>
     </section>
 
-    <section class="email-notice">
-      <h2>Confirmation email sent</h2>
-      <p>We've sent your booking details and private manage link to your email address. Please check your inbox or spam folder.</p>
+    <section class="email-notice" id="emailNotice">
+      <h2 id="emailNoticeTitle">Confirmation email sent</h2>
+      <p id="emailNoticeText">We've sent your booking details and private manage link to your email address. Please check your inbox or spam folder.</p>
     </section>
 
     <section class="appointment-card">
@@ -335,11 +335,18 @@
     const time = params.get("time");
     const end = params.get("end");
     const timezone = params.get("timezone") || "Your local time zone";
+    const status = params.get("status") || "confirmed";
+    const isPendingApproval = status === "pending_approval";
+
+    document.getElementById("eyebrowText").textContent = isPendingApproval ? "Free trial request received" : "Booking confirmed";
+    document.getElementById("heroTitle").textContent = isPendingApproval ? "Request received" : "You're all set";
+    document.getElementById("emailNoticeTitle").textContent = isPendingApproval ? "Free trial request received" : "Confirmation email sent";
+    document.getElementById("emailNoticeText").textContent = isPendingApproval ? "We've received your free trial request and sent a copy to your email. This is not a confirmed booking yet. It needs to be approved by the teacher first." : "We've sent your booking details and private manage link to your email address. Please check your inbox or spam folder.";
 
     document.getElementById("nameText").textContent = name;
     document.getElementById("bookingIdText").textContent = bookingId;
     document.getElementById("classText").textContent = classTitle;
-    document.getElementById("subtitleText").textContent = `Your ${classTitle} has been booked. Please save the details below before closing this page.`;
+    document.getElementById("subtitleText").textContent = isPendingApproval ? `Your ${classTitle} request has been received, but the lesson is not confirmed yet.` : `Your ${classTitle} has been booked. Please save the details below before closing this page.`;
     document.getElementById("durationText").textContent = duration ? `${duration} minutes` : "Confirmed";
     document.getElementById("creditText").textContent = creditCost === "0" ? "0 credits" : (creditCost ? `${creditCost} credit${creditCost === "1" ? "" : "s"}` : "Confirmed");
     document.getElementById("timezoneText").textContent = timezone;
@@ -356,7 +363,11 @@
       finalManageUrl = `manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
     }
 
-    if (finalManageUrl) {
+    if (isPendingApproval) {
+      manageBox.querySelector("h2").textContent = "Teacher approval required";
+      manageBox.querySelector("p").textContent = "Your selected time is a request only, not a confirmed lesson. The teacher will review your learning goals, lesson options, and availability. If approved, you will receive a confirmation email with the final lesson details.";
+      manageBox.querySelector(".actions").style.display = "none";
+    } else if (finalManageUrl) {
       manageLink.href = finalManageUrl;
     } else {
       manageBox.style.display = "none";

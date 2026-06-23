@@ -5,10 +5,6 @@ const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_TAB = process.env.GOOGLE_SHEET_TAB || "Bookings";
-const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
-const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
-const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
-const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || 12);
 
 const CLASS_TYPES = {
   "free-trial": {
@@ -34,7 +30,7 @@ function getGoogleAuth() {
   return new google.auth.JWT({
     email: clientEmail,
     key: privateKey,
-    scopes: ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/spreadsheets"]
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
   });
 }
 
@@ -42,7 +38,6 @@ function normalizeEmail(email) { return String(email || "").trim().toLowerCase()
 function toNumber(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
 function userError(message, statusCode = 400) { const e = new Error(message); e.statusCode = statusCode; return e; }
 function json(statusCode, body) { return { statusCode, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }, body: JSON.stringify(body) }; }
-function createTransactionId() { return `TX-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`; }
 
 async function getBookings(sheets) {
   const response = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_TAB}!A:Y` });
@@ -77,25 +72,13 @@ async function getBookings(sheets) {
   }));
 }
 
-function findBooking(bookings, bookingId, token) {
-  const booking = bookings.find(item => item.bookingId === bookingId && item.manageToken === token);
-  if (!booking) throw userError("Booking not found or link is invalid.", 404);
-  return booking;
-}
-
 function getClassConfig(eventType) {
   const config = CLASS_TYPES[eventType];
   if (!config) throw userError("Invalid class type.", 400);
   return config;
 }
 
-function canManageBooking(booking) {
-  if (booking.status !== "confirmed") return false;
-  const start = DateTime.fromISO(booking.startTime, { zone: "utc" });
-  return start.isValid && start > DateTime.utc().plus({ hours: MANAGE_CUTOFF_HOURS });
-}
-
-function publicBooking(booking) {
+function publicRequest(booking) {
   const config = getClassConfig(booking.eventType);
   return {
     bookingId: booking.bookingId,
@@ -116,19 +99,26 @@ function publicBooking(booking) {
   };
 }
 
+function findTrialRequest(bookings, bookingId, token) {
+  const booking = bookings.find(item => item.bookingId === bookingId && item.approvalToken === token);
+  if (!booking) throw userError("Trial request not found or review link is invalid.", 404);
+  if (booking.eventType !== "free-trial") throw userError("This review link is only for free trial requests.", 400);
+  return booking;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { message: "Method not allowed" });
   try {
     if (!SHEET_ID) throw userError("Missing GOOGLE_SHEET_ID.", 500);
     const bookingId = event.queryStringParameters?.id || "";
     const token = event.queryStringParameters?.token || "";
-    if (!bookingId || !token) throw userError("Missing booking id or token.", 400);
+    if (!bookingId || !token) throw userError("Missing request id or token.", 400);
     const auth = getGoogleAuth();
     const sheets = google.sheets({ version: "v4", auth });
-    const booking = findBooking(await getBookings(sheets), bookingId, token);
-    return json(200, { ok: true, booking: publicBooking(booking), canManage: canManageBooking(booking), cutoffHours: MANAGE_CUTOFF_HOURS });
+    const booking = findTrialRequest(await getBookings(sheets), bookingId, token);
+    return json(200, { ok: true, request: publicRequest(booking), teacherTimezone: DEFAULT_TIMEZONE });
   } catch (error) {
-    console.error("get-booking error", error);
-    return json(error.statusCode || 500, { message: error.message || "Could not load booking." });
+    console.error("get-trial-request error", error);
+    return json(error.statusCode || 500, { message: error.message || "Could not load trial request." });
   }
 };

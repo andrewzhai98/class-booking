@@ -54,6 +54,17 @@
       <p id="introText">Loading your booking details...</p>
       <div class="summary" id="summary"></div>
       <div id="mainNotice" class="notice"></div>
+      <div id="adminPanel" class="notice info hidden">
+        <strong>Teacher/admin access</strong><br>
+        If you are the teacher, enter the admin code to change or cancel this booking inside the normal cutoff window.
+        <div class="field">
+          <label for="adminCode">Admin code</label>
+          <input id="adminCode" type="password" autocomplete="off" placeholder="Enter admin code" />
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" type="button" id="adminUnlockBtn">Unlock management</button>
+        </div>
+      </div>
       <div class="actions" id="manageActions">
         <button class="btn btn-primary" type="button" id="changeBtn">Change time</button>
         <button class="btn btn-danger" type="button" id="cancelBtn">Cancel booking</button>
@@ -79,13 +90,16 @@
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get("id") || "";
     const token = params.get("token") || "";
-    const state = { booking: null, selectedSlot: null, maxDaysAhead: 14 };
+    const state = { booking: null, selectedSlot: null, maxDaysAhead: 14, canManage: false, adminUnlocked: false, adminCode: "" };
     const els = {
       statusBadge: document.getElementById("statusBadge"),
       introText: document.getElementById("introText"),
       summary: document.getElementById("summary"),
       mainNotice: document.getElementById("mainNotice"),
       manageActions: document.getElementById("manageActions"),
+      adminPanel: document.getElementById("adminPanel"),
+      adminCode: document.getElementById("adminCode"),
+      adminUnlockBtn: document.getElementById("adminUnlockBtn"),
       changeBtn: document.getElementById("changeBtn"),
       cancelBtn: document.getElementById("cancelBtn"),
       changePanel: document.getElementById("changePanel"),
@@ -105,6 +119,7 @@
       els.newDate.max = toDateInput(max);
       els.changeBtn.addEventListener("click", () => els.changePanel.classList.toggle("hidden"));
       els.cancelBtn.addEventListener("click", cancelBooking);
+      els.adminUnlockBtn.addEventListener("click", unlockAdminManagement);
       els.loadSlotsBtn.addEventListener("click", loadSlots);
       await loadBooking();
     }
@@ -139,6 +154,7 @@
     }
 
     function renderBooking(booking, canManage, cutoffHours) {
+      state.canManage = Boolean(canManage);
       els.statusBadge.textContent = booking.status;
       if (booking.status === "cancelled") {
         els.introText.textContent = "This booking has been cancelled. No further action is needed.";
@@ -158,8 +174,22 @@
         <div><strong>Time zone:</strong> ${escapeHtml(booking.timezone)}</div>
         <div><strong>Credits:</strong> ${booking.creditCost} credit${booking.creditCost === 1 ? "" : "s"}</div>
       `;
-      els.manageActions.classList.toggle("hidden", !canManage || booking.status !== "confirmed");
-      if (!canManage) els.changePanel.classList.add("hidden");
+      const canUseActions = (canManage || state.adminUnlocked) && booking.status === "confirmed";
+      els.manageActions.classList.toggle("hidden", !canUseActions);
+      els.adminPanel.classList.toggle("hidden", canManage || booking.status !== "confirmed" || state.adminUnlocked);
+      if (!canUseActions) els.changePanel.classList.add("hidden");
+    }
+
+    function unlockAdminManagement() {
+      const code = els.adminCode.value.trim();
+      if (!code) {
+        setNotice(els.mainNotice, "error", "Please enter the admin code.", true);
+        return;
+      }
+      state.adminUnlocked = true;
+      state.adminCode = code;
+      setNotice(els.mainNotice, "info", "Admin code added. The server will verify it when you change or cancel the booking.", true);
+      renderBooking(state.booking, state.canManage, 12);
     }
 
     async function loadSlots() {
@@ -199,7 +229,7 @@
         const res = await fetch("/.netlify/functions/update-booking", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bookingId, token, start, timezone: state.booking.timezone })
+          body: JSON.stringify({ bookingId, token, start, timezone: state.booking.timezone, adminCode: state.adminCode })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.message || "Could not update booking.");
@@ -218,7 +248,7 @@
         const res = await fetch("/.netlify/functions/cancel-booking", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bookingId, token })
+          body: JSON.stringify({ bookingId, token, adminCode: state.adminCode })
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.message || "Could not cancel booking.");

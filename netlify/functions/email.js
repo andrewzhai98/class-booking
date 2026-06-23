@@ -73,6 +73,39 @@ async function sendBookingCancelledEmail({ booking, classConfig, refunded }) {
   });
 }
 
+async function sendTrialRequestReceivedEmail({ booking, classConfig }) {
+  return sendBookingEmail({
+    to: booking.email,
+    subject: "We received your free trial request",
+    heading: "Your free trial request has been received",
+    intro: "Your free trial request has been received, but this is not a confirmed booking yet. It needs to be approved by the teacher first.",
+    booking,
+    classConfig,
+    manageLink: "",
+    actionText: "",
+    actionUrl: "",
+    extraHtml: `
+      <p style="margin:16px 0 0;color:#4b5563;line-height:1.6;">Your selected time is a request only. Before confirming a free trial, the teacher will review your learning goals, lesson options, and availability. This helps make sure the lesson is a good fit for your needs.</p>
+      <p style="margin:12px 0 0;color:#4b5563;line-height:1.6;">The teacher will contact you by email shortly to discuss the next steps.</p>
+    `
+  });
+}
+
+async function sendTrialRequestRejectedEmail({ booking, classConfig }) {
+  return sendBookingEmail({
+    to: booking.email,
+    subject: "Update about your free trial request",
+    heading: "Free trial request update",
+    intro: "Thank you for your free trial request. After review, this requested trial time cannot be confirmed.",
+    booking,
+    classConfig,
+    manageLink: "",
+    actionText: "Book another lesson",
+    actionUrl: BOOKING_PAGE_URL,
+    extraHtml: `<p style="margin:16px 0 0;color:#4b5563;line-height:1.6;">Teacher may contact you by email if there is another lesson option or time that is a better fit.</p>`
+  });
+}
+
 async function sendTeacherNewBookingEmail({ booking, classConfig, manageLink }) {
   return sendTeacherEmail({
     subject: `New booking: ${classConfig.title}`,
@@ -82,6 +115,19 @@ async function sendTeacherNewBookingEmail({ booking, classConfig, manageLink }) 
     classConfig,
     manageLink,
     timeLabel: "Lesson time"
+  });
+}
+
+async function sendTeacherTrialReviewEmail({ booking, classConfig, reviewLink }) {
+  return sendTeacherEmail({
+    subject: "New free trial request",
+    heading: "New free trial request",
+    intro: "A student has requested a free trial class. Please review the student details before confirming.",
+    booking,
+    classConfig,
+    manageLink: reviewLink,
+    timeLabel: "Requested trial time",
+    statusRows: [["Request status", "Pending teacher approval"]]
   });
 }
 
@@ -233,7 +279,7 @@ function buildEmailText({ heading, intro, booking, classConfig, manageLink, acti
     manageLink ? `Manage booking: ${manageLink}` : "",
     actionUrl && actionUrl !== manageLink ? `Link: ${actionUrl}` : "",
     "",
-    `Cancellation policy: You can cancel your lesson online no less than ${MANAGE_CUTOFF_HOURS} hours before the lesson. If it is less than ${MANAGE_CUTOFF_HOURS} hours before the lesson, please contact the teacher directly.`,
+    manageLink ? `Cancellation policy: You can cancel your lesson online no less than ${MANAGE_CUTOFF_HOURS} hours before the lesson. If it is less than ${MANAGE_CUTOFF_HOURS} hours before the lesson, please contact the teacher directly.` : "",
     "",
     "English with Becky"
   ].filter(Boolean).join("\n");
@@ -351,7 +397,10 @@ module.exports = {
   sendBookingUpdatedEmail,
   sendBookingCancelledEmail,
   sendBookingReminderEmail,
+  sendTrialRequestReceivedEmail,
+  sendTrialRequestRejectedEmail,
   sendTeacherNewBookingEmail,
+  sendTeacherTrialReviewEmail,
   sendTeacherBookingUpdatedEmail,
   sendTeacherBookingCancelledEmail
 };

@@ -1,7 +1,7 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const crypto = require("crypto");
-const { sendBookingConfirmationEmail, sendTeacherNewBookingEmail } = require("./email");
+const { sendBookingConfirmationEmail, sendTeacherNewBookingEmail, sendTrialRequestReceivedEmail, sendTeacherTrialReviewEmail } = require("./email");
 
 const DEFAULT_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
@@ -103,48 +103,56 @@ exports.handler = async (event) => {
     const bookingId = createBookingId();
     const manageToken = createManageToken();
     const manageLink = buildManageLink(payload, bookingId, manageToken);
-    const description = buildDescription(payload, bookingId, classConfig, manageToken, manageLink);
+    const approvalToken = classConfig.eventType === "free-trial" ? createManageToken() : "";
+    const reviewLink = approvalToken ? buildReviewLink(payload, bookingId, approvalToken) : "";
+    let calendarEventId = "";
+    const isTrialRequest = classConfig.eventType === "free-trial";
+    const status = isTrialRequest ? "pending_approval" : "confirmed";
 
-    const eventRequestBody = {
-      summary: classConfig.title,
-      description,
-      location: MEETING_LOCATION,
-      start: {
-        dateTime: start.toISO(),
-        timeZone: "UTC"
-      },
-      end: {
-        dateTime: end.toISO(),
-        timeZone: "UTC"
+    if (!isTrialRequest) {
+      const description = buildDescription(payload, bookingId, classConfig, manageToken, manageLink);
+      const eventRequestBody = {
+        summary: classConfig.title,
+        description,
+        location: MEETING_LOCATION,
+        start: {
+          dateTime: start.toISO(),
+          timeZone: "UTC"
+        },
+        end: {
+          dateTime: end.toISO(),
+          timeZone: "UTC"
+        }
+      };
+
+      if (INVITE_ATTENDEES) {
+        eventRequestBody.attendees = buildAttendees(payload.email);
       }
-    };
 
-    if (INVITE_ATTENDEES) {
-      eventRequestBody.attendees = buildAttendees(payload.email);
+      const calendarEventResponse = await calendar.events.insert({
+        calendarId: CALENDAR_ID,
+        sendUpdates: INVITE_ATTENDEES ? "all" : "none",
+        requestBody: eventRequestBody
+      });
+
+      calendarEventId = calendarEventResponse.data.id || "";
     }
-
-    const calendarEventResponse = await calendar.events.insert({
-      calendarId: CALENDAR_ID,
-      sendUpdates: INVITE_ATTENDEES ? "all" : "none",
-      requestBody: eventRequestBody
-    });
-
-    const calendarEventId = calendarEventResponse.data.id || "";
 
     if (SHEET_ID) {
       await appendBookingToSheet(sheets, {
         bookingId,
         manageToken,
         manageLink,
+        approvalToken,
         payload,
         classConfig,
         start,
         end,
         calendarEventId,
-        status: "confirmed"
+        status
       });
 
-      if (classConfig.requiresCredits && student) {
+      if (!isTrialRequest && classConfig.requiresCredits && student) {
         const balanceAfter = await deductStudentCredits(sheets, student, classConfig.creditCost, payload.name);
         await appendCreditTransaction(sheets, {
           email: payload.email,
@@ -168,23 +176,38 @@ exports.handler = async (event) => {
       startTime: start.toISO(),
       endTime: end.toISO(),
       timezone: payload.timezone,
-      manageLink
+      manageLink,
+      reviewLink
     };
 
-    await sendEmailSafely(() => sendBookingConfirmationEmail({
-      booking: emailBooking,
-      classConfig,
-      manageLink
-    }), bookingId, "booking_confirmation");
+    if (isTrialRequest) {
+      await sendEmailSafely(() => sendTrialRequestReceivedEmail({
+        booking: emailBooking,
+        classConfig
+      }), bookingId, "trial_request_received");
 
-    await sendEmailSafely(() => sendTeacherNewBookingEmail({
-      booking: emailBooking,
-      classConfig,
-      manageLink
-    }), bookingId, "teacher_new_booking");
+      await sendEmailSafely(() => sendTeacherTrialReviewEmail({
+        booking: emailBooking,
+        classConfig,
+        reviewLink
+      }), bookingId, "teacher_trial_review");
+    } else {
+      await sendEmailSafely(() => sendBookingConfirmationEmail({
+        booking: emailBooking,
+        classConfig,
+        manageLink
+      }), bookingId, "booking_confirmation");
+
+      await sendEmailSafely(() => sendTeacherNewBookingEmail({
+        booking: emailBooking,
+        classConfig,
+        manageLink
+      }), bookingId, "teacher_new_booking");
+    }
 
     return json(200, {
       ok: true,
+      status,
       bookingId,
       manageToken,
       manageLink,
@@ -196,7 +219,7 @@ exports.handler = async (event) => {
       start: start.toISO(),
       end: end.toISO(),
       timezone: payload.timezone,
-      message: "Booking confirmed."
+      message: isTrialRequest ? "Free trial request received." : "Booking confirmed."
     });
   } catch (error) {
     console.error("book error", error);
@@ -235,7 +258,7 @@ function getClassConfig(eventType) {
 async function getExistingBookings(sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_TAB}!A:S`
+    range: `${SHEET_TAB}!A:Y`
   });
 
   const rows = response.data.values || [];
@@ -258,13 +281,19 @@ async function getExistingBookings(sheets) {
     manageToken: row[15] || "",
     manageLink: row[16] || "",
     updatedAt: row[17] || "",
-    changeCount: toNumber(row[18])
+    changeCount: toNumber(row[18]),
+    reminder3hSentAt: row[19] || "",
+    reminder3hForStartTime: row[20] || "",
+    approvalToken: row[21] || "",
+    approvedAt: row[22] || "",
+    rejectedAt: row[23] || "",
+    decisionAt: row[24] || ""
   }));
 }
 
 function enforceBookingRules(bookings, payload, requestedStart, classConfig) {
-  const activeStatuses = new Set(["pending", "confirmed"]);
-  const invalidTrialStatuses = new Set(["pending", "confirmed", "completed"]);
+  const activeStatuses = new Set(["pending", "pending_approval", "confirmed"]);
+  const invalidTrialStatuses = new Set(["pending", "pending_approval", "confirmed", "completed"]);
   const now = DateTime.utc();
   const requestedDay = requestedStart.setZone(DEFAULT_TIMEZONE).toISODate();
   const email = normalizeEmail(payload.email);
@@ -364,7 +393,7 @@ async function deductStudentCredits(sheets, student, creditCost, fallbackName) {
   return updatedBalance;
 }
 
-async function appendBookingToSheet(sheets, { bookingId, manageToken, manageLink, payload, classConfig, start, end, calendarEventId, status }) {
+async function appendBookingToSheet(sheets, { bookingId, manageToken, manageLink, approvalToken, payload, classConfig, start, end, calendarEventId, status }) {
   const values = [[
     new Date().toISOString(),
     bookingId,
@@ -384,12 +413,18 @@ async function appendBookingToSheet(sheets, { bookingId, manageToken, manageLink
     manageToken,
     manageLink,
     "",
-    0
+    0,
+    "",
+    "",
+    approvalToken || "",
+    "",
+    "",
+    ""
   ]];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_TAB}!A:S`,
+    range: `${SHEET_TAB}!A:Y`,
     valueInputOption: "USER_ENTERED",
     insertDataOption: "INSERT_ROWS",
     requestBody: { values }
@@ -500,6 +535,12 @@ function buildManageLink(payload, bookingId, manageToken) {
   const baseUrl = String(SITE_URL || payload.siteUrl || "").replace(/\/$/, "");
   if (!baseUrl) return `manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
   return `${baseUrl}/manage-booking.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(manageToken)}`;
+}
+
+function buildReviewLink(payload, bookingId, approvalToken) {
+  const baseUrl = String(SITE_URL || payload.siteUrl || "").replace(/\/$/, "");
+  if (!baseUrl) return `review-trial.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(approvalToken)}`;
+  return `${baseUrl}/review-trial.html?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(approvalToken)}`;
 }
 
 function json(statusCode, body) {

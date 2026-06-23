@@ -10,6 +10,7 @@ const STUDENTS_SHEET_TAB = process.env.STUDENTS_SHEET_TAB || "Students";
 const CREDIT_TRANSACTIONS_SHEET_TAB = process.env.CREDIT_TRANSACTIONS_SHEET_TAB || "CreditTransactions";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || 12);
+const BOOKING_ADMIN_CODE = process.env.BOOKING_ADMIN_CODE || "";
 
 const CLASS_TYPES = {
   "free-trial": {
@@ -54,7 +55,7 @@ function json(statusCode, body) { return { statusCode, headers: { "Content-Type"
 function createTransactionId() { return `TX-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`; }
 
 async function getBookings(sheets) {
-  const response = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_TAB}!A:S` });
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_TAB}!A:Y` });
   const rows = response.data.values || [];
   return rows.slice(1).map((row, index) => ({
     rowNumber: index + 2,
@@ -76,7 +77,13 @@ async function getBookings(sheets) {
     manageToken: row[15] || "",
     manageLink: row[16] || "",
     updatedAt: row[17] || "",
-    changeCount: toNumber(row[18])
+    changeCount: toNumber(row[18]),
+    reminder3hSentAt: row[19] || "",
+    reminder3hForStartTime: row[20] || "",
+    approvalToken: row[21] || "",
+    approvedAt: row[22] || "",
+    rejectedAt: row[23] || "",
+    decisionAt: row[24] || ""
   }));
 }
 
@@ -96,6 +103,10 @@ function canManageBooking(booking) {
   if (booking.status !== "confirmed") return false;
   const start = DateTime.fromISO(booking.startTime, { zone: "utc" });
   return start.isValid && start > DateTime.utc().plus({ hours: MANAGE_CUTOFF_HOURS });
+}
+
+function hasAdminOverride(payload) {
+  return Boolean(BOOKING_ADMIN_CODE) && String(payload.adminCode || "").trim() === BOOKING_ADMIN_CODE;
 }
 
 function publicBooking(booking) {
@@ -133,7 +144,7 @@ exports.handler = async (event) => {
     const calendar = google.calendar({ version: "v3", auth });
     const bookings = await getBookings(sheets);
     const booking = findBooking(bookings, bookingId, token);
-    if (!canManageBooking(booking)) throw userError(`This booking can no longer be cancelled online within ${MANAGE_CUTOFF_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
+    if (!canManageBooking(booking) && !hasAdminOverride(payload)) throw userError(`This booking can no longer be cancelled online within ${MANAGE_CUTOFF_HOURS} hours of the lesson. Please contact the teacher directly.`, 409);
 
     const config = getClassConfig(booking.eventType);
     if (booking.calendarEventId) {

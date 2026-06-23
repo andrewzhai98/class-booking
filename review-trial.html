@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Trial Request</title>
+  <style>
+    :root { --text:#111827; --muted:#6b7280; --primary:#ec4899; --primary2:#8b5cf6; --border:#e5e7eb; --danger:#dc2626; --success:#16a34a; --shadow:0 16px 40px rgba(17,24,39,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:24px; font-family:Inter,Arial,sans-serif; background:linear-gradient(180deg,#fff 0%,#f8fafc 100%); color:var(--text); }
+    .wrap { width:min(860px,100%); margin:0 auto; }
+    .card { background:white; border:1px solid var(--border); border-radius:28px; box-shadow:var(--shadow); padding:28px; margin:18px 0; }
+    .top { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+    .back { color:var(--muted); text-decoration:none; font-weight:800; }
+    .badge { display:inline-block; padding:8px 12px; border-radius:999px; background:#fdf2f8; color:#be185d; font-weight:900; font-size:13px; }
+    h1 { font-size:clamp(30px,5vw,44px); margin:12px 0; line-height:1.05; }
+    h2 { margin:0 0 12px; }
+    p { color:var(--muted); line-height:1.65; }
+    .summary { background:linear-gradient(180deg,#fdf2f8 0%,#faf5ff 100%); border:1px solid #f5d0fe; border-radius:20px; padding:16px; display:grid; gap:9px; color:#7e22ce; font-weight:750; }
+    .summary strong { color:var(--text); }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+    .btn { border:0; border-radius:999px; min-height:52px; padding:13px 18px; font-weight:900; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-flex; justify-content:center; align-items:center; text-align:center; }
+    .btn-primary { background:linear-gradient(90deg,var(--primary),var(--primary2)); color:white; box-shadow:0 14px 30px rgba(236,72,153,.22); }
+    .btn-danger { background:#fee2e2; color:#991b1b; }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .notice { border-radius:16px; padding:12px 14px; margin-top:14px; display:none; line-height:1.5; }
+    .notice.show { display:block; }
+    .notice.info { background:#eff6ff; color:#1d4ed8; }
+    .notice.error { background:#fef2f2; color:#b91c1c; }
+    .notice.success { background:#f0fdf4; color:#15803d; }
+    .hidden { display:none; }
+    @media (max-width:640px) { body { padding:16px; } .card { padding:22px; border-radius:28px; } .actions { flex-direction:column; } .btn { width:100%; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <a class="back" href="index.html">← Back to home</a>
+      <span class="badge">Teacher review</span>
+    </div>
+
+    <section class="card">
+      <span class="badge" id="statusBadge">Loading</span>
+      <h1>Free trial request</h1>
+      <p id="introText">Loading request details...</p>
+      <div class="summary" id="summary"></div>
+      <div id="mainNotice" class="notice"></div>
+      <div class="actions hidden" id="reviewActions">
+        <button class="btn btn-primary" type="button" id="approveBtn">Approve request</button>
+        <button class="btn btn-danger" type="button" id="rejectBtn">Reject request</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("id") || "";
+    const token = params.get("token") || "";
+    const state = { request: null, teacherTimezone: "Europe/London" };
+    const els = {
+      statusBadge: document.getElementById("statusBadge"),
+      introText: document.getElementById("introText"),
+      summary: document.getElementById("summary"),
+      mainNotice: document.getElementById("mainNotice"),
+      reviewActions: document.getElementById("reviewActions"),
+      approveBtn: document.getElementById("approveBtn"),
+      rejectBtn: document.getElementById("rejectBtn")
+    };
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    async function init() {
+      els.approveBtn.addEventListener("click", () => decide("approve"));
+      els.rejectBtn.addEventListener("click", () => decide("reject"));
+      await loadRequest();
+    }
+
+    async function loadRequest() {
+      if (!bookingId || !token) {
+        setNotice(els.mainNotice, "error", "Missing review link details.", true);
+        return;
+      }
+      try {
+        const res = await fetch(`/.netlify/functions/get-trial-request?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(token)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not load request.");
+        state.request = data.request;
+        state.teacherTimezone = data.teacherTimezone || state.teacherTimezone;
+        renderRequest(data.request);
+      } catch (error) {
+        setNotice(els.mainNotice, "error", error.message || "Could not load request.", true);
+      }
+    }
+
+    function renderRequest(request) {
+      els.statusBadge.textContent = request.status;
+      els.introText.textContent = request.status === "pending_approval" ? "Please review the student details before confirming the free trial." : "This request has already been reviewed.";
+      els.summary.innerHTML = `
+        <div><strong>Request ID:</strong> ${escapeHtml(request.bookingId)}</div>
+        <div><strong>Class:</strong> ${escapeHtml(request.classTitle)}</div>
+        <div><strong>Student:</strong> ${escapeHtml(request.name)}</div>
+        <div><strong>Email:</strong> ${escapeHtml(request.email)}</div>
+        <div><strong>Contact:</strong> ${escapeHtml(request.contact || "Not provided")}</div>
+        <div><strong>Requested time:</strong> ${formatRange(request.startTime, request.endTime, request.timezone)} (${escapeHtml(request.timezone)})</div>
+        <div><strong>Teacher time:</strong> ${formatRange(request.startTime, request.endTime, state.teacherTimezone)} (${escapeHtml(state.teacherTimezone)})</div>
+        <div><strong>Level:</strong> ${escapeHtml(request.studentLevel || "Not provided")}</div>
+        <div><strong>Goal:</strong> ${escapeHtml(request.goal || "Not provided")}</div>
+        <div><strong>Notes:</strong> ${escapeHtml(request.notes || "None")}</div>
+      `;
+      els.reviewActions.classList.toggle("hidden", request.status !== "pending_approval");
+    }
+
+    async function decide(decision) {
+      const label = decision === "approve" ? "approve" : "reject";
+      if (!confirm(`Are you sure you want to ${label} this free trial request?`)) return;
+      els.approveBtn.disabled = true;
+      els.rejectBtn.disabled = true;
+      setNotice(els.mainNotice, "info", "Updating request...", true);
+      try {
+        const res = await fetch("/.netlify/functions/decide-trial-request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId, token, decision })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || "Could not update request.");
+        setNotice(els.mainNotice, "success", data.message || "Request updated.", true);
+        await loadRequest();
+      } catch (error) {
+        setNotice(els.mainNotice, "error", error.message || "Could not update request.", true);
+      } finally {
+        els.approveBtn.disabled = false;
+        els.rejectBtn.disabled = false;
+      }
+    }
+
+    function setNotice(el, type, message, show) { el.className = `notice ${type}${show ? " show" : ""}`; el.textContent = message || ""; }
+    function formatRange(start, end, timezone) {
+      const options = { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone: timezone };
+      const endOptions = { hour:"numeric", minute:"2-digit", timeZone: timezone };
+      try { return `${new Intl.DateTimeFormat("en", options).format(new Date(start))} - ${new Intl.DateTimeFormat("en", endOptions).format(new Date(end))}`; }
+      catch (error) { return `${start} - ${end}`; }
+    }
+    function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
+  </script>
+</body>
+</html>

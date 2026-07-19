@@ -125,11 +125,11 @@ set camp_time = 'camp_time_a',
       else session_key
     end,
     display_time = case session_number
-      when 1 then 'Monday · 13:00–13:45 UK time'
-      when 2 then 'Tuesday · 13:00–13:45 UK time'
-      when 3 then 'Wednesday · 13:00–13:45 UK time'
-      when 4 then 'Thursday · 13:00–13:45 UK time'
-      when 5 then 'Friday · 13:00–13:45 UK time'
+      when 1 then 'Monday 10 August · 13:00–13:45 UK time'
+      when 2 then 'Tuesday 11 August · 13:00–13:45 UK time'
+      when 3 then 'Wednesday 12 August · 13:00–13:45 UK time'
+      when 4 then 'Thursday 13 August · 13:00–13:45 UK time'
+      when 5 then 'Friday 14 August · 13:00–13:45 UK time'
       else display_time
     end
 where class_id in (select id from selected_class)
@@ -142,16 +142,16 @@ insert into group_sessions (class_id, session_key, session_number, title, displa
 select selected_class.id, session_key, session_number, title, display_time, camp_time, 6
 from selected_class
 cross join (values
-  ('camp-a-session-1', 1, 'Session 1', 'Monday · 13:00–13:45 UK time', 'camp_time_a'),
-  ('camp-a-session-2', 2, 'Session 2', 'Tuesday · 13:00–13:45 UK time', 'camp_time_a'),
-  ('camp-a-session-3', 3, 'Session 3', 'Wednesday · 13:00–13:45 UK time', 'camp_time_a'),
-  ('camp-a-session-4', 4, 'Session 4', 'Thursday · 13:00–13:45 UK time', 'camp_time_a'),
-  ('camp-a-session-5', 5, 'Session 5', 'Friday · 13:00–13:45 UK time', 'camp_time_a'),
-  ('camp-b-session-1', 1, 'Session 1', 'Monday · 19:00–19:45 UK time', 'camp_time_b'),
-  ('camp-b-session-2', 2, 'Session 2', 'Tuesday · 19:00–19:45 UK time', 'camp_time_b'),
-  ('camp-b-session-3', 3, 'Session 3', 'Wednesday · 19:00–19:45 UK time', 'camp_time_b'),
-  ('camp-b-session-4', 4, 'Session 4', 'Thursday · 19:00–19:45 UK time', 'camp_time_b'),
-  ('camp-b-session-5', 5, 'Session 5', 'Friday · 19:00–19:45 UK time', 'camp_time_b')
+  ('camp-a-session-1', 1, 'Session 1', 'Monday 10 August · 13:00–13:45 UK time', 'camp_time_a'),
+  ('camp-a-session-2', 2, 'Session 2', 'Tuesday 11 August · 13:00–13:45 UK time', 'camp_time_a'),
+  ('camp-a-session-3', 3, 'Session 3', 'Wednesday 12 August · 13:00–13:45 UK time', 'camp_time_a'),
+  ('camp-a-session-4', 4, 'Session 4', 'Thursday 13 August · 13:00–13:45 UK time', 'camp_time_a'),
+  ('camp-a-session-5', 5, 'Session 5', 'Friday 14 August · 13:00–13:45 UK time', 'camp_time_a'),
+  ('camp-b-session-1', 1, 'Session 1', 'Monday 10 August · 19:00–19:45 UK time', 'camp_time_b'),
+  ('camp-b-session-2', 2, 'Session 2', 'Tuesday 11 August · 19:00–19:45 UK time', 'camp_time_b'),
+  ('camp-b-session-3', 3, 'Session 3', 'Wednesday 12 August · 19:00–19:45 UK time', 'camp_time_b'),
+  ('camp-b-session-4', 4, 'Session 4', 'Thursday 13 August · 19:00–19:45 UK time', 'camp_time_b'),
+  ('camp-b-session-5', 5, 'Session 5', 'Friday 14 August · 19:00–19:45 UK time', 'camp_time_b')
 ) as seed(session_key, session_number, title, display_time, camp_time)
 on conflict (class_id, session_key) do update set
   session_number = excluded.session_number,
@@ -212,16 +212,16 @@ with selected_class as (
 )
 update group_sessions
 set display_time = case session_key
-  when 'camp-a-session-1' then 'Monday · 13:00–13:45 UK time'
-  when 'camp-a-session-2' then 'Tuesday · 13:00–13:45 UK time'
-  when 'camp-a-session-3' then 'Wednesday · 13:00–13:45 UK time'
-  when 'camp-a-session-4' then 'Thursday · 13:00–13:45 UK time'
-  when 'camp-a-session-5' then 'Friday · 13:00–13:45 UK time'
-  when 'camp-b-session-1' then 'Monday · 19:00–19:45 UK time'
-  when 'camp-b-session-2' then 'Tuesday · 19:00–19:45 UK time'
-  when 'camp-b-session-3' then 'Wednesday · 19:00–19:45 UK time'
-  when 'camp-b-session-4' then 'Thursday · 19:00–19:45 UK time'
-  when 'camp-b-session-5' then 'Friday · 19:00–19:45 UK time'
+  when 'camp-a-session-1' then 'Monday 10 August · 13:00–13:45 UK time'
+  when 'camp-a-session-2' then 'Tuesday 11 August · 13:00–13:45 UK time'
+  when 'camp-a-session-3' then 'Wednesday 12 August · 13:00–13:45 UK time'
+  when 'camp-a-session-4' then 'Thursday 13 August · 13:00–13:45 UK time'
+  when 'camp-a-session-5' then 'Friday 14 August · 13:00–13:45 UK time'
+  when 'camp-b-session-1' then 'Monday 10 August · 19:00–19:45 UK time'
+  when 'camp-b-session-2' then 'Tuesday 11 August · 19:00–19:45 UK time'
+  when 'camp-b-session-3' then 'Wednesday 12 August · 19:00–19:45 UK time'
+  when 'camp-b-session-4' then 'Thursday 13 August · 19:00–19:45 UK time'
+  when 'camp-b-session-5' then 'Friday 14 August · 19:00–19:45 UK time'
   else display_time
 end
 where class_id in (select id from selected_class)

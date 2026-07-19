@@ -261,6 +261,79 @@
       .actions { flex-direction:column; }
       .btn { width:100%; }
     }
+
+    /* Unified mobile polish: compact spacing, touch-friendly controls, and overflow-safe layouts. */
+    @media (max-width:700px){
+      html{overflow-x:hidden;}
+      body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
+      .page{padding:18px 0 34px;}
+      .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
+
+      .site-nav{padding:8px 0 6px;}
+      .nav-inner{min-height:auto;grid-template-columns:1fr;align-items:flex-start;gap:10px;padding:8px 0 6px;}
+      .brand{font-size:17px;white-space:normal;line-height:1.08;}
+      .brand small{font-size:10px;letter-spacing:.055em;line-height:1.25;}
+      .nav-links{width:100%;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+      .nav-links::-webkit-scrollbar{display:none;}
+      .nav-links a{flex:0 0 auto;min-height:34px;padding:0 10px;font-size:12px;}
+      .nav-links .nav-book{padding:8px 12px;}
+
+      .topbar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px;}
+      .back{font-size:13px;}
+      .badge,.pill,.chip,.status,.spots,.timezone-chip{max-width:100%;white-space:normal;line-height:1.25;}
+      .badge{font-size:12px;padding:7px 10px;}
+
+      h1{font-size:clamp(30px,9.4vw,38px);line-height:1.04;margin:10px 0 12px;}
+      h2{font-size:clamp(24px,7.2vw,30px);line-height:1.12;}
+      h3{font-size:18px;}
+      .sub,.muted,p,li{line-height:1.55;}
+      .sub{font-size:15px;margin-bottom:16px;}
+
+      .hero,.hero-card,.hero-grid,.hero-shell,.request-shell,.main-grid,.content-grid,.split,.layout,.panel-grid,.booking-shell,.review-shell{grid-template-columns:1fr !important;gap:14px;}
+      .hero-card{border-radius:22px;padding:12px;}
+      .hero-panel,.hero-copy,.hero-content{border-radius:18px;padding:18px;min-height:auto;}
+      .section{padding:24px 0;}
+      .section-head{margin-bottom:14px;}
+      .card,.panel,.box,.notice-card{border-radius:20px;padding:18px;max-width:100%;}
+
+      .grid-2,.grid-3,.cards,.route-grid,.trust-grid,.feature-grid,.lesson-grid,.pass-choice-grid,.pass-choice-grid.two-options,.form-grid,.info-grid,.summary-grid,.actions-grid{grid-template-columns:1fr !important;gap:10px;}
+      .mini-points,.info-list{grid-template-columns:1fr !important;gap:9px;}
+      .mini-points div,.info-list div{padding:11px;font-size:13px;}
+
+      .btns,.actions,.cta-row,.button-row,.form-actions{display:grid !important;grid-template-columns:1fr !important;gap:10px;width:100%;}
+      .btn,button,[type="submit"],.button,.cta{width:100%;min-height:46px;padding:12px 16px;justify-content:center;text-align:center;}
+
+      input,select,textarea{width:100%;max-width:100%;min-height:46px;padding:12px 13px;font-size:16px;}
+      textarea{min-height:104px;}
+      label{min-width:0;}
+
+      .calendar,.calendar-grid,.time-grid,.slot-grid,.availability-grid,.matrix,.matrix-wrap,.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      table{min-width:560px;}
+      .time-slot,.slot,.day-cell{min-width:44px;min-height:38px;}
+
+      .session,.booking-row,.review-row,.summary-row{grid-template-columns:auto minmax(0,1fr) !important;align-items:flex-start;border-radius:16px;padding:11px;}
+      .session > span,.booking-row > span,.review-row > span,.summary-row > span{min-width:0;}
+      .session input{margin-top:3px;}
+      .session-time{display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+      .spots{grid-column:2;width:max-content;margin-top:2px;}
+
+      details summary{align-items:flex-start;}
+      .terms-checkbox,.checkbox-row{grid-template-columns:auto minmax(0,1fr) !important;}
+    }
+
+    @media (max-width:380px){
+      .container,.wrap,.shell{width:min(100% - 20px,1080px);}
+      .hero-card{padding:10px;}
+      .hero-panel,.hero-copy,.hero-content,.card,.panel,.box,.notice-card{padding:16px;}
+      .nav-links a{font-size:11.5px;padding:0 9px;}
+    }
+
+
+    @media (max-width:700px){
+      .success-card,.summary-card{padding:18px;border-radius:20px;}
+      .next-steps{grid-template-columns:1fr !important;}
+    }
+
   </style>
 </head>
 <body>

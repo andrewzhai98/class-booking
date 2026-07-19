@@ -97,7 +97,7 @@
 
     .class-options {
       display:grid;
-      grid-template-columns:repeat(2,1fr);
+      grid-template-columns:repeat(3,1fr);
       gap:12px;
       margin:14px 0 18px;
     }
@@ -152,6 +152,48 @@
       content:"Selected";
       background:rgba(255,255,255,.22);
       color:white;
+    }
+
+    .class-option-link {
+      display:block;
+      text-decoration:none;
+    }
+
+    .class-option-link::after {
+      content:"Tap to select";
+    }
+
+    .camp-option {
+      border-color:var(--border);
+      background:#fff;
+      box-shadow:0 16px 36px rgba(17,24,39,.07);
+    }
+
+    .camp-option:hover {
+      border-color:#cbd5e1;
+      box-shadow:0 18px 42px rgba(17,24,39,.10);
+    }
+
+    .camp-option strong {
+      color:var(--text);
+    }
+
+    .camp-option .class-pill {
+      background:#f3e8ff;
+      color:#111827;
+      border-color:#ede9fe;
+    }
+
+    .camp-option .camp-tag {
+      background:#eef6e8;
+      color:#315b46;
+      border:1px solid #d9e8d1;
+    }
+
+    .label-muted {
+      color:var(--muted);
+      font-weight:900;
+      font-size:.92em;
     }
 
     .class-option strong {
@@ -485,6 +527,80 @@
       .slot-grid { grid-template-columns:1fr; }
       .summary-row { align-items:flex-start; }
     }
+
+    /* Unified mobile polish: compact spacing, touch-friendly controls, and overflow-safe layouts. */
+    @media (max-width:700px){
+      html{overflow-x:hidden;}
+      body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
+      .page{padding:18px 0 34px;}
+      .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
+
+      .site-nav{padding:8px 0 6px;}
+      .nav-inner{min-height:auto;grid-template-columns:1fr;align-items:flex-start;gap:10px;padding:8px 0 6px;}
+      .brand{font-size:17px;white-space:normal;line-height:1.08;}
+      .brand small{font-size:10px;letter-spacing:.055em;line-height:1.25;}
+      .nav-links{width:100%;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+      .nav-links::-webkit-scrollbar{display:none;}
+      .nav-links a{flex:0 0 auto;min-height:34px;padding:0 10px;font-size:12px;}
+      .nav-links .nav-book{padding:8px 12px;}
+
+      .topbar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px;}
+      .back{font-size:13px;}
+      .badge,.pill,.chip,.status,.spots,.timezone-chip{max-width:100%;white-space:normal;line-height:1.25;}
+      .badge{font-size:12px;padding:7px 10px;}
+
+      h1{font-size:clamp(30px,9.4vw,38px);line-height:1.04;margin:10px 0 12px;}
+      h2{font-size:clamp(24px,7.2vw,30px);line-height:1.12;}
+      h3{font-size:18px;}
+      .sub,.muted,p,li{line-height:1.55;}
+      .sub{font-size:15px;margin-bottom:16px;}
+
+      .hero,.hero-card,.hero-grid,.hero-shell,.request-shell,.main-grid,.content-grid,.split,.layout,.panel-grid,.booking-shell,.review-shell{grid-template-columns:1fr !important;gap:14px;}
+      .hero-card{border-radius:22px;padding:12px;}
+      .hero-panel,.hero-copy,.hero-content{border-radius:18px;padding:18px;min-height:auto;}
+      .section{padding:24px 0;}
+      .section-head{margin-bottom:14px;}
+      .card,.panel,.box,.notice-card{border-radius:20px;padding:18px;max-width:100%;}
+
+      .grid-2,.grid-3,.cards,.route-grid,.trust-grid,.feature-grid,.lesson-grid,.pass-choice-grid,.pass-choice-grid.two-options,.form-grid,.info-grid,.summary-grid,.actions-grid{grid-template-columns:1fr !important;gap:10px;}
+      .mini-points,.info-list{grid-template-columns:1fr !important;gap:9px;}
+      .mini-points div,.info-list div{padding:11px;font-size:13px;}
+
+      .btns,.actions,.cta-row,.button-row,.form-actions{display:grid !important;grid-template-columns:1fr !important;gap:10px;width:100%;}
+      .btn,button,[type="submit"],.button,.cta{width:100%;min-height:46px;padding:12px 16px;justify-content:center;text-align:center;}
+
+      input,select,textarea{width:100%;max-width:100%;min-height:46px;padding:12px 13px;font-size:16px;}
+      textarea{min-height:104px;}
+      label{min-width:0;}
+
+      .calendar,.calendar-grid,.time-grid,.slot-grid,.availability-grid,.matrix,.matrix-wrap,.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      table{min-width:560px;}
+      .time-slot,.slot,.day-cell{min-width:44px;min-height:38px;}
+
+      .session,.booking-row,.review-row,.summary-row{grid-template-columns:auto minmax(0,1fr) !important;align-items:flex-start;border-radius:16px;padding:11px;}
+      .session > span,.booking-row > span,.review-row > span,.summary-row > span{min-width:0;}
+      .session input{margin-top:3px;}
+      .session-time{display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+      .spots{grid-column:2;width:max-content;margin-top:2px;}
+
+      details summary{align-items:flex-start;}
+      .terms-checkbox,.checkbox-row{grid-template-columns:auto minmax(0,1fr) !important;}
+    }
+
+    @media (max-width:380px){
+      .container,.wrap,.shell{width:min(100% - 20px,1080px);}
+      .hero-card{padding:10px;}
+      .hero-panel,.hero-copy,.hero-content,.card,.panel,.box,.notice-card{padding:16px;}
+      .nav-links a{font-size:11.5px;padding:0 9px;}
+    }
+
+
+    @media (max-width:700px){
+      .booking-panel,.booking-card,.calendar-panel,.time-panel{padding:16px;border-radius:20px;}
+      .calendar-grid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(46px,1fr);overflow-x:auto;}
+      .time-grid,.slots,.slot-list{grid-template-columns:1fr !important;}
+    }
+
   </style>
 </head>
 
@@ -493,7 +609,7 @@
     <div class="container">
       <div class="topbar">
         <a class="back" href="index.html">← Back to home</a>
-        <span class="badge">Free Trial · Regular Lesson · Online</span>
+        <span class="badge">Free Trial (1v1) · Regular Lesson (1v1) · English Camp (Group Class)</span>
       </div>
 
       <div class="layout">
@@ -501,14 +617,14 @@
           <span class="badge">Book your lesson</span>
           <h1>Book an English Lesson</h1>
           <p class="sub">
-            Choose a class type first, then pick a time that works for you. Regular lessons require lesson credits.
+            Choose the right path first. Free Trial and Regular Lesson are 1v1. English Camp is a Group Class module for small-group courses.
           </p>
 
           <div class="info-list">
-            <div class="info-item">Free Trial: 15 minutes · 0 credits</div>
-            <div class="info-item">Regular Lesson: 45 minutes · 1 credit</div>
+            <div class="info-item">Free Trial (1v1): 15 minutes · 0 credits</div>
+            <div class="info-item">Regular Lesson (1v1): 45 minutes · 1 credit</div>
             <div class="info-item">Time zone: automatically detected</div>
-            <div class="info-item">Regular lessons require a prepaid lesson package</div>
+            <div class="info-item">English Camp (Group Class) is a separate small-group request module</div>
           </div>
         </section>
 
@@ -535,10 +651,10 @@
 
           <div id="classPanel">
             <h2>Choose your class</h2>
-            <p class="sub">Start with a short free trial, or book a regular lesson if you already have prepaid lesson credits.</p>
+            <p class="sub">Start with a 1v1 free trial, book a 1v1 regular lesson, or explore English Camp for group classes.</p>
             <div class="class-options">
               <button class="class-option" type="button" data-class-type="free-trial">
-                <strong>Free Trial Class</strong>
+                <strong>Free Trial Class <span class="label-muted">(1v1)</span></strong>
                 <span>Best for new students who want to meet the teacher first.</span>
                 <div class="class-meta">
                   <span class="class-pill">15 min</span>
@@ -547,7 +663,7 @@
                 </div>
               </button>
               <button class="class-option" type="button" data-class-type="regular-lesson">
-                <strong>Regular Lesson</strong>
+                <strong>Regular Lesson <span class="label-muted">(1v1)</span></strong>
                 <span>For students who already have prepaid lesson credits.</span>
                 <div class="class-meta">
                   <span class="class-pill">45 min</span>
@@ -555,6 +671,15 @@
                   <span class="class-pill">Prepaid package</span>
                 </div>
               </button>
+              <a class="class-option class-option-link camp-option" href="english-camp.html">
+                <strong>English Camp <span class="label-muted">(Group Class)</span></strong>
+                <span>Group class mini course with 3/5 session pass options.</span>
+                <div class="class-meta">
+                  <span class="class-pill camp-tag">Group Class</span>
+                  <span class="class-pill">3/5 sessions</span>
+                  <span class="class-pill">Request first</span>
+                </div>
+              </a>
             </div>
             <div id="trialApprovalPanel" class="trial-approval-panel">
               <p><strong>Free trial requests need teacher approval.</strong></p>

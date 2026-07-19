@@ -57,6 +57,24 @@ exports.handler = async (event) => {
     const auth = getAuthClient();
     const calendar = google.calendar({ version: "v3", auth });
 
+    const hasAllDayBlock = await hasAllDayEventOnDate({
+      calendar,
+      date: dayInTeacherTimezone,
+      calendarId: CALENDAR_ID
+    });
+
+    if (hasAllDayBlock) {
+      return json(200, {
+        date,
+        timezone: visitorTimezone,
+        teacherTimezone: DEFAULT_TIMEZONE,
+        slotDurationMinutes: SLOT_DURATION_MINUTES,
+        minLeadHours: MIN_LEAD_HOURS,
+        maxDaysAhead: MAX_DAYS_AHEAD,
+        slots: []
+      });
+    }
+
     const busyResponse = await calendar.freebusy.query({
       requestBody: {
         timeMin: startOfWork.minus({ minutes: PRE_BUFFER_MINUTES }).toISO(),
@@ -129,6 +147,24 @@ function buildAvailableSlots({ startOfWork, endOfWork, duration, preBufferMinute
 function setTime(date, time) {
   const [hour, minute] = time.split(":").map(Number);
   return date.set({ hour, minute, second: 0, millisecond: 0 });
+}
+
+async function hasAllDayEventOnDate({ calendar, date, calendarId }) {
+  const startOfDay = date.startOf("day");
+  const endOfDay = startOfDay.plus({ days: 1 });
+
+  const response = await calendar.events.list({
+    calendarId,
+    timeMin: startOfDay.toISO(),
+    timeMax: endOfDay.toISO(),
+    singleEvents: true,
+    orderBy: "startTime"
+  });
+
+  return (response.data.items || []).some((event) => {
+    if (event.status === "cancelled") return false;
+    return Boolean(event.start?.date && event.end?.date);
+  });
 }
 
 function parseWorkDays(value) {

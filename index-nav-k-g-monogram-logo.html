@@ -34,46 +34,49 @@
     }
 
     .site-nav{
-      position:sticky;
-      top:0;
-      z-index:50;
-      background:rgba(255,255,255,.84);
-      padding:14px 0 8px;
-      border-bottom:1px solid rgba(229,231,235,.72);
-      backdrop-filter:blur(14px);
-      -webkit-backdrop-filter:blur(14px);
-      box-shadow:0 10px 26px rgba(17,24,39,.035);
+      position:relative;
+      z-index:10;
+      background:transparent;
+      padding:22px 0 2px;
     }
 
     .nav-inner{
-      min-height:46px;
+      min-height:54px;
       display:grid;
       grid-template-columns:1fr auto;
-      align-items:end;
+      align-items:center;
       gap:18px;
+      border-bottom:1px solid rgba(244,214,232,.88);
+      padding-bottom:12px;
     }
 
     .brand{
       display:inline-flex;
-      flex-direction:column;
-      gap:5px;
+      align-items:center;
+      gap:12px;
       color:var(--text);
       text-decoration:none;
-      font-weight:950;
-      letter-spacing:-.035em;
       white-space:nowrap;
-      font-size:18px;
     }
 
-    .brand small{
-      color:#9ca3af;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
+    .brand-text{display:flex;flex-direction:column;gap:3px;}
+    .brand-text strong{font-size:18px;font-weight:950;letter-spacing:-.035em;line-height:1;}
+    .brand-text small{font-size:11px;font-weight:850;letter-spacing:.11em;text-transform:uppercase;color:#9ca3af;}
 
-    .brand-mark{display:none;}
+    .brand-mark{
+      width:42px;
+      height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:14px;
+      color:white;
+      background:linear-gradient(135deg,#111827 0%,#7c3aed 58%,#ec4899 100%);
+      box-shadow:0 10px 24px rgba(139,92,246,.16);
+      font-weight:950;
+      font-size:13px;
+      letter-spacing:-.04em;
+    }
 
     .nav-links{
       display:flex;
@@ -122,6 +125,7 @@
 
     .nav-links .nav-book::after{display:none;}
     .nav-links .nav-book:hover{color:white;background:linear-gradient(90deg,var(--primary),var(--primary2));}
+
 
     .hero{
       padding:26px 0 42px;
@@ -292,155 +296,6 @@
       font-weight:800;
     }
 
-    .comments-section{
-      position:relative;
-      overflow:hidden;
-      background:linear-gradient(180deg,#fff 0%,#faf5ff 100%);
-      border-top:1px solid rgba(237,233,254,.72);
-      border-bottom:1px solid rgba(237,233,254,.72);
-    }
-
-    .comments-wrap{
-      position:relative;
-      z-index:1;
-    }
-
-
-    .comments-head{
-      max-width:760px;
-      margin:0 auto 22px;
-      text-align:center;
-    }
-
-    .comments-kicker{
-      display:inline-flex;
-      padding:8px 12px;
-      border-radius:999px;
-      background:#fdf2f8;
-      color:#be185d;
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      margin-bottom:12px;
-    }
-
-    .comments-head h2{
-      font-size:32px;
-      line-height:1.05;
-      margin:0 0 12px;
-      letter-spacing:-.04em;
-    }
-
-    .comments-head p{
-      color:var(--muted);
-      line-height:1.7;
-      margin:0;
-    }
-
-    .comments-scroll{
-      display:flex;
-      gap:14px;
-      overflow-x:auto;
-      overscroll-behavior-x:contain;
-      scroll-snap-type:x mandatory;
-      padding:4px 4px 16px;
-      scrollbar-width:thin;
-      scrollbar-color:#e9d5ff transparent;
-    }
-
-    .comments-scroll::-webkit-scrollbar{height:8px;}
-    .comments-scroll::-webkit-scrollbar-track{background:transparent;}
-    .comments-scroll::-webkit-scrollbar-thumb{background:#e9d5ff;border-radius:999px;}
-
-    .comment-card{
-      min-width:238px;
-      max-width:238px;
-      min-height:310px;
-      scroll-snap-align:start;
-      background:white;
-      border:1px solid rgba(229,231,235,.95);
-      border-radius:24px;
-      padding:18px;
-      box-shadow:0 12px 30px rgba(17,24,39,.055);
-      display:flex;
-      flex-direction:column;
-    }
-
-    .comment-person{
-      display:flex;
-      align-items:center;
-      gap:11px;
-      margin-bottom:11px;
-    }
-
-    .comment-avatar{
-      width:42px;
-      height:42px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      background:linear-gradient(135deg,#fdf2f8,#ede9fe);
-      color:#be185d;
-      font-weight:950;
-      flex:0 0 42px;
-    }
-
-    .comment-person strong{display:block;font-size:15px;}
-    .comment-person span{display:block;color:#9ca3af;font-size:12px;font-weight:800;margin-top:2px;}
-    .comment-stars{color:#f59e0b;font-size:13px;letter-spacing:.05em;margin-bottom:9px;}
-
-
-    .comment-avatar-wrap{
-      position:relative;
-      width:42px;
-      height:42px;
-      flex:0 0 42px;
-    }
-
-    .comment-avatar-img{
-      width:42px;
-      height:42px;
-      display:block;
-      border-radius:999px;
-      object-fit:cover;
-      background:#fdf2f8;
-      border:1px solid #ede9fe;
-    }
-
-    .comment-avatar-wrap .comment-avatar{
-      position:absolute;
-      inset:0;
-      display:none;
-    }
-
-    .comment-avatar-wrap .comment-avatar-img[style*="display: none"] + .comment-avatar{
-      display:inline-flex;
-    }
-
-    .comment-card p{
-      color:#4b5563;
-      line-height:1.65;
-      margin:0;
-      font-size:14px;
-    }
-
-    .comment-card mark{
-      background:#fef3c7;
-      color:#7c2d12;
-      padding:1px 4px;
-      border-radius:6px;
-    }
-
-    .comments-note{
-      color:#9ca3af;
-      font-size:12px;
-      line-height:1.55;
-      margin-top:2px;
-      text-align:center;
-    }
-
     .tiny-flow{
       max-width:860px;
       margin:0 auto;
@@ -564,128 +419,7 @@
         font-size:13px;
       }
 
-      .comments-section{
-      position:relative;
-      overflow:hidden;
-      background:linear-gradient(180deg,#fff 0%,#faf5ff 100%);
-      border-top:1px solid rgba(237,233,254,.72);
-      border-bottom:1px solid rgba(237,233,254,.72);
-    }
-
-    .comments-wrap{
-      position:relative;
-      z-index:1;
-    }
-
-
-    .comments-head{
-      max-width:760px;
-      margin:0 auto 22px;
-      text-align:center;
-    }
-
-    .comments-kicker{
-      display:inline-flex;
-      padding:8px 12px;
-      border-radius:999px;
-      background:#fdf2f8;
-      color:#be185d;
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      margin-bottom:12px;
-    }
-
-    .comments-head h2{
-      font-size:32px;
-      line-height:1.05;
-      margin:0 0 12px;
-      letter-spacing:-.04em;
-    }
-
-    .comments-head p{
-      color:var(--muted);
-      line-height:1.7;
-      margin:0;
-    }
-
-    .comments-scroll{
-      display:flex;
-      gap:14px;
-      overflow-x:auto;
-      overscroll-behavior-x:contain;
-      scroll-snap-type:x mandatory;
-      padding:4px 4px 16px;
-      scrollbar-width:thin;
-      scrollbar-color:#e9d5ff transparent;
-    }
-
-    .comments-scroll::-webkit-scrollbar{height:8px;}
-    .comments-scroll::-webkit-scrollbar-track{background:transparent;}
-    .comments-scroll::-webkit-scrollbar-thumb{background:#e9d5ff;border-radius:999px;}
-
-    .comment-card{
-      min-width:238px;
-      max-width:238px;
-      min-height:310px;
-      scroll-snap-align:start;
-      background:white;
-      border:1px solid rgba(229,231,235,.95);
-      border-radius:24px;
-      padding:18px;
-      box-shadow:0 12px 30px rgba(17,24,39,.055);
-      display:flex;
-      flex-direction:column;
-    }
-
-    .comment-person{
-      display:flex;
-      align-items:center;
-      gap:11px;
-      margin-bottom:11px;
-    }
-
-    .comment-avatar{
-      width:42px;
-      height:42px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      background:linear-gradient(135deg,#fdf2f8,#ede9fe);
-      color:#be185d;
-      font-weight:950;
-      flex:0 0 42px;
-    }
-
-    .comment-person strong{display:block;font-size:15px;}
-    .comment-person span{display:block;color:#9ca3af;font-size:12px;font-weight:800;margin-top:2px;}
-    .comment-stars{color:#f59e0b;font-size:13px;letter-spacing:.05em;margin-bottom:9px;}
-
-    .comment-card p{
-      color:#4b5563;
-      line-height:1.65;
-      margin:0;
-      font-size:14px;
-    }
-
-    .comment-card mark{
-      background:#fef3c7;
-      color:#7c2d12;
-      padding:1px 4px;
-      border-radius:6px;
-    }
-
-    .comments-note{
-      color:#9ca3af;
-      font-size:12px;
-      line-height:1.55;
-      margin-top:2px;
-      text-align:center;
-    }
-
-    .tiny-flow{
+      .tiny-flow{
         display:grid;
         grid-template-columns:1fr;
         max-width:360px;
@@ -702,81 +436,14 @@
         text-align:center;
       }
     }
-
-    /* Unified mobile polish: compact spacing, touch-friendly controls, and overflow-safe layouts. */
-    @media (max-width:700px){
-      html{overflow-x:hidden;}
-      body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
-      .page{padding:18px 0 34px;}
-      .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
-
-      .site-nav{padding:8px 0 6px;}
-      .nav-inner{min-height:auto;grid-template-columns:1fr;align-items:flex-start;gap:10px;padding:8px 0 6px;}
-      .brand{font-size:17px;white-space:normal;line-height:1.08;}
-      .brand small{font-size:10px;letter-spacing:.055em;line-height:1.25;}
-      .nav-links{width:100%;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-      .nav-links::-webkit-scrollbar{display:none;}
-      .nav-links a{flex:0 0 auto;min-height:34px;padding:0 10px;font-size:12px;}
-      .nav-links .nav-book{padding:8px 12px;}
-
-      .topbar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px;}
-      .back{font-size:13px;}
-      .badge,.pill,.chip,.status,.spots,.timezone-chip{max-width:100%;white-space:normal;line-height:1.25;}
-      .badge{font-size:12px;padding:7px 10px;}
-
-      h1{font-size:clamp(30px,9.4vw,38px);line-height:1.04;margin:10px 0 12px;}
-      h2{font-size:clamp(24px,7.2vw,30px);line-height:1.12;}
-      h3{font-size:18px;}
-      .sub,.muted,p,li{line-height:1.55;}
-      .sub{font-size:15px;margin-bottom:16px;}
-
-      .hero,.hero-card,.hero-grid,.hero-shell,.request-shell,.main-grid,.content-grid,.split,.layout,.panel-grid,.booking-shell,.review-shell{grid-template-columns:1fr !important;gap:14px;}
-      .hero-card{border-radius:22px;padding:12px;}
-      .hero-panel,.hero-copy,.hero-content{border-radius:18px;padding:18px;min-height:auto;}
-      .section{padding:24px 0;}
-      .section-head{margin-bottom:14px;}
-      .card,.panel,.box,.notice-card{border-radius:20px;padding:18px;max-width:100%;}
-
-      .grid-2,.grid-3,.cards,.route-grid,.trust-grid,.feature-grid,.lesson-grid,.pass-choice-grid,.pass-choice-grid.two-options,.form-grid,.info-grid,.summary-grid,.actions-grid{grid-template-columns:1fr !important;gap:10px;}
-      .mini-points,.info-list{grid-template-columns:1fr !important;gap:9px;}
-      .mini-points div,.info-list div{padding:11px;font-size:13px;}
-
-      .btns,.actions,.cta-row,.button-row,.form-actions{display:grid !important;grid-template-columns:1fr !important;gap:10px;width:100%;}
-      .btn,button,[type="submit"],.button,.cta{width:100%;min-height:46px;padding:12px 16px;justify-content:center;text-align:center;}
-
-      input,select,textarea{width:100%;max-width:100%;min-height:46px;padding:12px 13px;font-size:16px;}
-      textarea{min-height:104px;}
-      label{min-width:0;}
-
-      .calendar,.calendar-grid,.time-grid,.slot-grid,.availability-grid,.matrix,.matrix-wrap,.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-      table{min-width:560px;}
-      .time-slot,.slot,.day-cell{min-width:44px;min-height:38px;}
-
-      .session,.booking-row,.review-row,.summary-row{grid-template-columns:auto minmax(0,1fr) !important;align-items:flex-start;border-radius:16px;padding:11px;}
-      .session > span,.booking-row > span,.review-row > span,.summary-row > span{min-width:0;}
-      .session input{margin-top:3px;}
-      .session-time{display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
-      .spots{grid-column:2;width:max-content;margin-top:2px;}
-
-      details summary{align-items:flex-start;}
-      .terms-checkbox,.checkbox-row{grid-template-columns:auto minmax(0,1fr) !important;}
-    }
-
-    @media (max-width:380px){
-      .container,.wrap,.shell{width:min(100% - 20px,1080px);}
-      .hero-card{padding:10px;}
-      .hero-panel,.hero-copy,.hero-content,.card,.panel,.box,.notice-card{padding:16px;}
-      .nav-links a{font-size:11.5px;padding:0 9px;}
-    }
-
   </style>
 </head>
 <body>
   <nav class="site-nav" aria-label="Main navigation">
     <div class="container nav-inner">
       <a class="brand" href="index.html" aria-label="English with Becky homepage">
-        <span>English with Becky</span>
-        <small>Speak naturally · Learn with confidence</small>
+        <span class="brand-mark">EB</span>
+        <span class="brand-text"><strong>English with Becky</strong><small>British English Lessons</small></span>
       </a>
       <div class="nav-links">
         <a href="booking.html">Lessons</a>
@@ -866,32 +533,6 @@
         <div class="bubble"><em>2</em>Pick a time</div>
         <div class="tiny-arrow">→</div>
         <div class="bubble"><em>3</em>Confirm details</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section comments-section">
-    <div class="container comments-wrap">
-      <div class="comments-head">
-        <h2>Join students who have seen results with me</h2>
-      </div>
-
-      <div class="comments-scroll" aria-label="Student comment cards">
-        <article class="comment-card">
-          <div class="comment-person"><span class="comment-avatar-wrap"><img class="comment-avatar-img" src="comment_profile/1.jpg" alt="Student profile" onerror="this.style.display='none';" /><span class="comment-avatar">J</span></span><div><strong>Jimmy</strong><span>May 2026</span></div></div>
-          <div class="comment-stars">★★★★★</div>
-          <p>“Teacher Becky's premium English course was amazing. It was one of the best courses I've taken in my life! I learned a lot from her, received support and helped feel more confident with my English.”</p>
-        </article>
-        <article class="comment-card">
-          <div class="comment-person"><span class="comment-avatar-wrap"><img class="comment-avatar-img" src="comment_profile/2.jpg" alt="Student profile" onerror="this.style.display='none';" /><span class="comment-avatar">K</span></span><div><strong>Ken</strong><span>February 2026</span></div></div>
-          <div class="comment-stars">★★★★★</div>
-          <p>“Teacher Becky is an excellent English teacher. Her lessons are always well-prepared, clear, and very engaging. She explains things in a way that's easy to understand and has helped me become much more confident in speaking. I highly recommend her lessons to everyone!”</p>
-        </article>
-        <article class="comment-card">
-          <div class="comment-person"><span class="comment-avatar-wrap"><img class="comment-avatar-img" src="comment_profile/3.jpg" alt="Student profile" onerror="this.style.display='none';" /><span class="comment-avatar">J</span></span><div><strong>Joy's mum</strong><span>Parent review</span></div></div>
-          <div class="comment-stars">★★★★★</div>
-          <p>“Teacher Becky has great classes. She helped my daughter improve her English and she learnt a lot!”</p>
-        </article>
       </div>
     </div>
   </section>

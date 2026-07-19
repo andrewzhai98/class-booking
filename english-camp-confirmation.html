@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Camp Payment Confirmation</title>
+  <style>
+    :root{--bg:#f7f3ea;--text:#1f3428;--muted:#68786f;--primary:#214c37;--primary2:#56764d;--border:#e2dccf;--white:#fffaf1;--success:#16a34a;--shadow:0 18px 44px rgba(49,91,70,.11)}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 8% 6%,rgba(49,91,70,.13),transparent 28%),radial-gradient(circle at 88% 10%,rgba(217,70,143,.07),transparent 30%),linear-gradient(180deg,#fbf7ee 0%,#f7f3ea 56%,#fffaf1 100%);color:var(--text)}
+    .page{min-height:100vh;display:grid;place-items:center;padding:36px 18px}
+    .shell{width:min(920px,100%);display:grid;grid-template-columns:.9fr 1.1fr;gap:18px;background:rgba(255,250,241,.92);border:1px solid rgba(226,220,207,.95);border-radius:30px;padding:18px;box-shadow:var(--shadow)}
+    .panel{border-radius:24px;padding:26px;background:linear-gradient(135deg,rgba(24,63,45,.98),rgba(54,88,58,.96));color:#fffaf1;display:flex;flex-direction:column;justify-content:space-between;min-height:430px;overflow:hidden;position:relative}
+    .panel::after{content:"";position:absolute;width:230px;height:230px;border-radius:999px;right:-80px;bottom:-80px;background:rgba(255,255,255,.14)}
+    .badge{display:inline-flex;width:max-content;border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:13px;font-weight:900;color:#fffaf1}
+    h1{font-size:clamp(34px,5vw,58px);line-height:1.03;margin:18px 0;letter-spacing:-.04em}
+    h2{font-size:clamp(24px,3vw,34px);line-height:1.1;margin:0 0 10px;letter-spacing:-.03em}
+    p{line-height:1.6}.sub{font-size:18px;color:rgba(255,255,255,.86);margin:0}.muted{color:var(--muted)}
+    .card{background:white;border:1px solid var(--border);border-radius:24px;padding:24px;box-shadow:0 10px 28px rgba(24,63,45,.07)}
+    .status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;background:#dcfce7;color:#166534;padding:9px 12px;font-size:13px;font-weight:950;margin-bottom:16px}
+    .status.loading{background:#fef3c7;color:#92400e}.status.error{background:#fee2e2;color:#991b1b}
+    .details{display:grid;gap:10px;margin:20px 0}.row{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #f1eee7;padding-bottom:10px}.row strong{font-size:14px}.row span{text-align:right;color:var(--muted);font-weight:800}
+    .session-list{display:grid;gap:8px;margin-top:12px}.session{border:1px solid var(--border);border-radius:16px;padding:11px 12px;background:#fffaf1;font-weight:850;color:#294335}
+    .next{background:#eef6e8;border:1px solid #cfe0c5;border-radius:18px;padding:14px 16px;margin-top:18px;color:#294335;font-weight:800;line-height:1.55}
+    .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:13px 18px;text-decoration:none;font-weight:950}.btn-primary{background:linear-gradient(90deg,#183f2d,#4f6f48);color:#fffaf1}.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--text)}
+    .mini-points{display:grid;gap:10px;margin-top:20px}.mini-points div{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px;font-size:14px;font-weight:850;color:#fffaf1}
+    @media(max-width:780px){.shell{grid-template-columns:1fr}.panel{min-height:auto}}
+
+    /* Unified mobile polish: compact spacing, touch-friendly controls, and overflow-safe layouts. */
+    @media (max-width:700px){
+      html{overflow-x:hidden;}
+      body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
+      .page{padding:18px 0 34px;}
+      .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
+
+      .site-nav{padding:8px 0 6px;}
+      .nav-inner{min-height:auto;grid-template-columns:1fr;align-items:flex-start;gap:10px;padding:8px 0 6px;}
+      .brand{font-size:17px;white-space:normal;line-height:1.08;}
+      .brand small{font-size:10px;letter-spacing:.055em;line-height:1.25;}
+      .nav-links{width:100%;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+      .nav-links::-webkit-scrollbar{display:none;}
+      .nav-links a{flex:0 0 auto;min-height:34px;padding:0 10px;font-size:12px;}
+      .nav-links .nav-book{padding:8px 12px;}
+
+      .topbar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px;}
+      .back{font-size:13px;}
+      .badge,.pill,.chip,.status,.spots,.timezone-chip{max-width:100%;white-space:normal;line-height:1.25;}
+      .badge{font-size:12px;padding:7px 10px;}
+
+      h1{font-size:clamp(30px,9.4vw,38px);line-height:1.04;margin:10px 0 12px;}
+      h2{font-size:clamp(24px,7.2vw,30px);line-height:1.12;}
+      h3{font-size:18px;}
+      .sub,.muted,p,li{line-height:1.55;}
+      .sub{font-size:15px;margin-bottom:16px;}
+
+      .hero,.hero-card,.hero-grid,.hero-shell,.request-shell,.main-grid,.content-grid,.split,.layout,.panel-grid,.booking-shell,.review-shell{grid-template-columns:1fr !important;gap:14px;}
+      .hero-card{border-radius:22px;padding:12px;}
+      .hero-panel,.hero-copy,.hero-content{border-radius:18px;padding:18px;min-height:auto;}
+      .section{padding:24px 0;}
+      .section-head{margin-bottom:14px;}
+      .card,.panel,.box,.notice-card{border-radius:20px;padding:18px;max-width:100%;}
+
+      .grid-2,.grid-3,.cards,.route-grid,.trust-grid,.feature-grid,.lesson-grid,.pass-choice-grid,.pass-choice-grid.two-options,.form-grid,.info-grid,.summary-grid,.actions-grid{grid-template-columns:1fr !important;gap:10px;}
+      .mini-points,.info-list{grid-template-columns:1fr !important;gap:9px;}
+      .mini-points div,.info-list div{padding:11px;font-size:13px;}
+
+      .btns,.actions,.cta-row,.button-row,.form-actions{display:grid !important;grid-template-columns:1fr !important;gap:10px;width:100%;}
+      .btn,button,[type="submit"],.button,.cta{width:100%;min-height:46px;padding:12px 16px;justify-content:center;text-align:center;}
+
+      input,select,textarea{width:100%;max-width:100%;min-height:46px;padding:12px 13px;font-size:16px;}
+      textarea{min-height:104px;}
+      label{min-width:0;}
+
+      .calendar,.calendar-grid,.time-grid,.slot-grid,.availability-grid,.matrix,.matrix-wrap,.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      table{min-width:560px;}
+      .time-slot,.slot,.day-cell{min-width:44px;min-height:38px;}
+
+      .session,.booking-row,.review-row,.summary-row{grid-template-columns:auto minmax(0,1fr) !important;align-items:flex-start;border-radius:16px;padding:11px;}
+      .session > span,.booking-row > span,.review-row > span,.summary-row > span{min-width:0;}
+      .session input{margin-top:3px;}
+      .session-time{display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+      .spots{grid-column:2;width:max-content;margin-top:2px;}
+
+      details summary{align-items:flex-start;}
+      .terms-checkbox,.checkbox-row{grid-template-columns:auto minmax(0,1fr) !important;}
+    }
+
+    @media (max-width:380px){
+      .container,.wrap,.shell{width:min(100% - 20px,1080px);}
+      .hero-card{padding:10px;}
+      .hero-panel,.hero-copy,.hero-content,.card,.panel,.box,.notice-card{padding:16px;}
+      .nav-links a{font-size:11.5px;padding:0 9px;}
+    }
+
+
+    @media (max-width:700px){
+      .confirmation-card,.payment-card,.summary-card{padding:18px;border-radius:20px;}
+      .confirmation-grid,.payment-grid{grid-template-columns:1fr !important;}
+    }
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="shell">
+      <div class="panel">
+        <div>
+          <span class="badge">English Camp · Group Class</span>
+          <h1>Payment received</h1>
+          <p class="sub">Thanks for completing your English Camp payment. Your place is confirmed automatically.</p>
+        </div>
+        <div class="mini-points">
+          <div>Payment verified securely</div>
+          <div>Your English Camp place is confirmed</div>
+          <div>You will receive the booking details by email</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="status loading" id="statusBadge">Checking payment...</div>
+        <h2 id="titleText">Confirming your payment</h2>
+        <p class="muted" id="messageText">Please wait while we verify your Stripe payment and update your English Camp request.</p>
+
+        <div class="details" id="detailsBox" hidden>
+          <div class="row"><strong>Student</strong><span id="studentText">—</span></div>
+          <div class="row"><strong>Email</strong><span id="emailText">—</span></div>
+          <div class="row"><strong>Camp time</strong><span id="campTimeText">—</span></div>
+          <div class="row"><strong>Pass</strong><span id="passText">—</span></div>
+          <div class="row"><strong>Amount paid</strong><span id="amountText">—</span></div>
+          <div class="row"><strong>Booking status</strong><span id="requestStatusText">Confirmed</span></div>
+        </div>
+
+        <div id="sessionsBox" hidden>
+          <h3>Selected sessions</h3>
+          <div class="session-list" id="sessionList"></div>
+        </div>
+
+        <div class="next" id="nextBox" hidden>Your payment has been received and your English Camp place is confirmed. Please check your email for the booking details.</div>
+
+        <div class="btns">
+          <a class="btn btn-primary" href="booking.html">Back to booking options</a>
+          <a class="btn btn-secondary" href="english-camp.html">View English Camp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const statusBadge = document.getElementById('statusBadge');
+    const titleText = document.getElementById('titleText');
+    const messageText = document.getElementById('messageText');
+    const detailsBox = document.getElementById('detailsBox');
+    const sessionsBox = document.getElementById('sessionsBox');
+    const sessionList = document.getElementById('sessionList');
+    const nextBox = document.getElementById('nextBox');
+
+    function passLabel(passType) {
+      return passType === 'five_session_pass' ? '5 Session Pass' : '3 Session Pass';
+    }
+
+    function money(amount, currency) {
+      const symbol = currency === 'GBP' ? '£' : `${currency || ''} `;
+      return amount == null ? '—' : `${symbol}${Number(amount).toFixed(0)}`;
+    }
+
+    function campTimeLabel(campTime) {
+      return campTime === 'camp_time_b' ? 'Camp B · 19:00–19:45 UK time' : 'Camp A · 13:00–13:45 UK time';
+    }
+
+    function sessionLabel(session) {
+      const title = session.title || session.session_key || 'English Camp session';
+      return [title, session.display_time].filter(Boolean).join(' · ');
+    }
+
+    async function confirmPayment() {
+      if (!sessionId) {
+        showError('Missing payment session', 'We could not find a Stripe checkout session ID on this page.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/.netlify/functions/confirm-group-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'Unable to confirm payment.');
+
+        const registration = data.registration || {};
+        statusBadge.className = 'status';
+        statusBadge.textContent = 'Payment received';
+        titleText.textContent = 'Your English Camp place is confirmed';
+        messageText.textContent = 'Your payment has been marked as paid and your English Camp booking is confirmed.';
+
+        document.getElementById('studentText').textContent = registration.studentName || '—';
+        document.getElementById('emailText').textContent = registration.studentEmail || '—';
+        document.getElementById('campTimeText').textContent = campTimeLabel(registration.campTime);
+        document.getElementById('passText').textContent = passLabel(registration.passType);
+        document.getElementById('amountText').textContent = money(registration.passPrice, registration.currency);
+        document.getElementById('requestStatusText').textContent = 'Confirmed';
+        detailsBox.hidden = false;
+
+        sessionList.innerHTML = (data.sessions || []).map((session) => `<div class="session">${escapeHtml(sessionLabel(session))}</div>`).join('') || '<div class="session">Session details will be confirmed by email.</div>';
+        sessionsBox.hidden = false;
+        nextBox.hidden = false;
+      } catch (error) {
+        showError('Payment check failed', error.message || 'Unable to confirm payment.');
+      }
+    }
+
+    function showError(title, message) {
+      statusBadge.className = 'status error';
+      statusBadge.textContent = 'Needs attention';
+      titleText.textContent = title;
+      messageText.textContent = message;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"]/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[char]));
+    }
+
+    confirmPayment();
+  </script>
+</body>
+</html>

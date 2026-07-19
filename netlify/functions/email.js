@@ -7,6 +7,9 @@ const TEACHER_TIMEZONE = process.env.TEACHER_TIMEZONE || "Europe/London";
 const SITE_URL = process.env.SITE_URL || "";
 const MIN_LEAD_HOURS = Number(process.env.MIN_LEAD_HOURS || 12);
 const BOOKING_PAGE_URL = process.env.BOOKING_PAGE_URL || (SITE_URL ? `${SITE_URL.replace(/\/$/, "")}/booking.html` : "booking.html");
+const CAMP_COURSE_NAME = "Teacher Becky’s English Summer Camp";
+const CAMP_THEME_NAME = "Summer in the UK";
+const CAMP_FULL_NAME = `${CAMP_COURSE_NAME}: ${CAMP_THEME_NAME}`;
 const MANAGE_CUTOFF_HOURS = Number(process.env.MANAGE_CUTOFF_HOURS || 12);
 
 async function sendBookingConfirmationEmail({ booking, classConfig, manageLink }) {
@@ -156,6 +159,243 @@ async function sendTeacherBookingCancelledEmail({ booking, classConfig, refunded
     timeLabel: "Cancelled lesson time",
     statusRows: [["Credit refunded", refunded ? "Yes" : "No"]]
   });
+}
+
+async function sendCampConfirmedEmail({ registration, groupClass, sessions }) {
+  const subject = `Your ${CAMP_COURSE_NAME} place is confirmed · ${campShortLabel(registration.camp_time)}`;
+  const heading = `Your ${CAMP_COURSE_NAME} place is confirmed`;
+  const intro = `Thank you for booking ${CAMP_FULL_NAME}. Your payment has been received and your ${campTimeLabel(registration.camp_time)} place is confirmed.`;
+  const html = buildCampStudentEmailHtml({
+    heading,
+    intro,
+    registration,
+    groupClass,
+    sessions,
+    extraHtml: `<p style="margin:16px 0 0;color:#4b5563;line-height:1.6;">If a class link is needed, the teacher will share it with you before the first selected session.</p>`
+  });
+  const text = buildCampStudentEmailText({
+    heading,
+    intro,
+    registration,
+    groupClass,
+    sessions
+  });
+  return sendRawEmail({ to: registration.student_email, subject, html, text });
+}
+
+async function sendCampPaymentPendingEmail({ registration, groupClass, sessions, checkoutUrl }) {
+  const subject = `Complete payment for ${CAMP_COURSE_NAME} · ${campShortLabel(registration.camp_time)} · ${campTimeOnlyLabel(registration.camp_time)}`;
+  const heading = `Complete payment for ${CAMP_COURSE_NAME}`;
+  const intro = `Your booking for ${CAMP_FULL_NAME} has been started for ${campTimeLabel(registration.camp_time)}, but your place is not confirmed until payment is complete.`;
+  const actionHtml = checkoutUrl ? `
+    <p style="margin:24px 0 0;">
+      <a href="${escapeAttribute(checkoutUrl)}" style="display:inline-block;background:#214c37;color:#ffffff;text-decoration:none;border-radius:999px;padding:13px 18px;font-weight:900;">Complete payment</a>
+    </p>
+    <p style="margin:14px 0 0;color:#6b7280;line-height:1.6;overflow-wrap:anywhere;">Payment link: <a href="${escapeAttribute(checkoutUrl)}" style="color:#214c37;">${escapeHtml(checkoutUrl)}</a></p>
+  ` : "";
+  const html = buildCampStudentEmailHtml({
+    heading,
+    intro,
+    registration,
+    groupClass,
+    sessions,
+    extraHtml: `${actionHtml}<p style="margin:16px 0 0;color:#4b5563;line-height:1.6;">If you have already completed payment, you can ignore this email and wait for your confirmation email.</p>`
+  });
+  const text = [
+    heading,
+    "",
+    `Hi ${registration.student_name || "there"},`,
+    intro,
+    "",
+    ...campDetailRows(registration, groupClass).map(([label, value]) => `${label}: ${value}`),
+    "",
+    "Selected sessions:",
+    ...campSessionLines(sessions).map((line) => `- ${line}`),
+    "",
+    checkoutUrl ? `Complete payment: ${checkoutUrl}` : "Please contact the teacher to complete payment.",
+    "",
+    "If you have already completed payment, you can ignore this email and wait for your confirmation email.",
+    "",
+    "English with Becky"
+  ].filter(Boolean).join("\n");
+  return sendRawEmail({ to: registration.student_email, subject, html, text });
+}
+
+async function sendTeacherCampPaidBookingEmail({ registration, groupClass, sessions, reviewLink }) {
+  if (!TEACHER_NOTIFICATION_EMAIL) {
+    console.warn("Teacher email skipped: TEACHER_NOTIFICATION_EMAIL is not set.");
+    return { skipped: true, reason: "missing_teacher_email" };
+  }
+
+  const subject = `New paid booking · ${CAMP_COURSE_NAME} · ${campShortLabel(registration.camp_time)} · ${campTimeOnlyLabel(registration.camp_time)}`;
+  const html = buildCampTeacherEmailHtml({ registration, groupClass, sessions, reviewLink });
+  const text = buildCampTeacherEmailText({ registration, groupClass, sessions, reviewLink });
+  return sendRawEmail({ to: TEACHER_NOTIFICATION_EMAIL, subject, html, text });
+}
+
+async function sendCampCancelledEmail({ registration, groupClass, sessions }) {
+  const subject = `Update about your ${CAMP_COURSE_NAME} booking`;
+  const heading = `Your ${CAMP_COURSE_NAME} booking has been cancelled`;
+  const intro = `Your ${CAMP_FULL_NAME} booking for ${campTimeLabel(registration.camp_time)} has been cancelled. If you have already paid, the teacher will follow up with you directly about the refund or next steps.`;
+  const html = buildCampStudentEmailHtml({
+    heading,
+    intro,
+    registration,
+    groupClass,
+    sessions,
+    extraHtml: ""
+  });
+  const text = buildCampStudentEmailText({
+    heading,
+    intro,
+    registration,
+    groupClass,
+    sessions
+  });
+  return sendRawEmail({ to: registration.student_email, subject, html, text });
+}
+
+function buildCampStudentEmailHtml({ heading, intro, registration, groupClass, sessions, extraHtml = "" }) {
+  const rows = campDetailRows(registration, groupClass);
+  const detailRows = rows.map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 0;color:#6b7280;font-weight:700;width:36%;">${escapeHtml(label)}</td>
+      <td style="padding:10px 0;color:#111827;font-weight:800;overflow-wrap:anywhere;">${escapeHtml(value)}</td>
+    </tr>
+  `).join("");
+  const sessionItems = campSessionLines(sessions).map((line) => `<li style="margin:7px 0;color:#111827;font-weight:800;">${escapeHtml(line)}</li>`).join("");
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#111827;">
+    <div style="max-width:640px;margin:0 auto;padding:28px 16px;">
+      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:24px;padding:28px;box-shadow:0 12px 32px rgba(17,24,39,.08);">
+        <div style="display:inline-block;background:#eef6e8;color:#214c37;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:900;margin-bottom:14px;">${escapeHtml(CAMP_COURSE_NAME)} · Group Class</div>
+        <h1 style="margin:0 0 12px;font-size:30px;line-height:1.15;">${escapeHtml(heading)}</h1>
+        <p style="margin:0 0 18px;color:#4b5563;line-height:1.6;">Hi ${escapeHtml(registration.student_name || "there")},</p>
+        <p style="margin:0 0 18px;color:#4b5563;line-height:1.6;">${escapeHtml(intro)}</p>
+        <table role="presentation" width="100%" style="border-collapse:collapse;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;margin:18px 0;">${detailRows}</table>
+        <h2 style="margin:20px 0 8px;font-size:18px;">Selected sessions</h2>
+        <ul style="margin:0;padding-left:20px;">${sessionItems || '<li style="margin:7px 0;color:#111827;font-weight:800;">Session details will be shared by email.</li>'}</ul>
+        ${extraHtml || ""}
+        <p style="margin:24px 0 0;color:#4b5563;line-height:1.6;">See you soon,<br>English with Becky</p>
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+function buildCampStudentEmailText({ heading, intro, registration, groupClass, sessions }) {
+  return [
+    heading,
+    "",
+    `Hi ${registration.student_name || "there"},`,
+    intro,
+    "",
+    ...campDetailRows(registration, groupClass).map(([label, value]) => `${label}: ${value}`),
+    "",
+    "Selected sessions:",
+    ...campSessionLines(sessions).map((line) => `- ${line}`),
+    "",
+    "English with Becky"
+  ].filter(Boolean).join("\n");
+}
+
+function buildCampTeacherEmailHtml({ registration, groupClass, sessions, reviewLink }) {
+  const bookingRows = [
+    ["Booking status", registration.status || ""],
+    ["Payment status", registration.payment_status || ""],
+    ...campDetailRows(registration, groupClass),
+    ["Teacher review page", reviewLink || ""]
+  ].filter(([, value]) => String(value || "").trim());
+
+  const studentRows = [
+    ["Name", registration.student_name || ""],
+    ["Email", registration.student_email || ""],
+    ["Level", registration.level || ""],
+    ["Goal", registration.learning_goal || ""]
+  ].filter(([, value]) => String(value || "").trim());
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#111827;">
+    <div style="max-width:680px;margin:0 auto;padding:28px 16px;">
+      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:24px;padding:28px;box-shadow:0 12px 32px rgba(17,24,39,.08);">
+        <div style="display:inline-block;background:#eef6e8;color:#214c37;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:900;margin-bottom:14px;">Teacher notification · ${escapeHtml(CAMP_COURSE_NAME)}</div>
+        <h1 style="margin:0 0 12px;font-size:28px;line-height:1.15;">New paid Summer Camp booking · ${escapeHtml(campShortLabel(registration.camp_time))}</h1>
+        <p style="margin:0 0 18px;color:#4b5563;line-height:1.6;">A student has paid for ${escapeHtml(CAMP_FULL_NAME)} · ${escapeHtml(campTimeLabel(registration.camp_time))}. The place is confirmed automatically unless you cancel it.</p>
+        ${tableHtml("Booking details", bookingRows)}
+        ${tableHtml("Student details", studentRows)}
+        ${tableHtml("Selected sessions", campSessionLines(sessions).map((line, index) => [`Session ${index + 1}`, line]))}
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+function buildCampTeacherEmailText({ registration, groupClass, sessions, reviewLink }) {
+  return [
+    `New paid Summer Camp booking · ${campShortLabel(registration.camp_time)}`,
+    "",
+    `A student has paid for ${CAMP_FULL_NAME} · ${campTimeLabel(registration.camp_time)}. The place is confirmed automatically unless you cancel it.`,
+
+    "",
+    `Student: ${registration.student_name || ""}`,
+    `Email: ${registration.student_email || ""}`,
+    `Level: ${registration.level || ""}`,
+    `Goal: ${registration.learning_goal || ""}`,
+    `Class: ${CAMP_COURSE_NAME}`,
+    `Camp time: ${campTimeLabel(registration.camp_time)}`,
+    `Pass: ${campPassLabel(registration.pass_type)}`,
+    `Amount paid: ${campMoney(registration.pass_price, registration.currency)}`,
+    `Booking status: ${registration.status || ""}`,
+    `Payment status: ${registration.payment_status || ""}`,
+    "",
+    "Selected sessions:",
+    ...campSessionLines(sessions).map((line) => `- ${line}`),
+    "",
+    reviewLink ? `Teacher review page: ${reviewLink}` : ""
+  ].filter(Boolean).join("\n");
+}
+
+function campDetailRows(registration, groupClass) {
+  return [
+    ["Class", CAMP_COURSE_NAME],
+    ["Theme", CAMP_THEME_NAME],
+    ["Camp time", campTimeLabel(registration.camp_time)],
+    ["Pass", campPassLabel(registration.pass_type)],
+    ["Amount paid", campMoney(registration.pass_price, registration.currency)],
+    ["Time zone", groupClass.timezone || TEACHER_TIMEZONE]
+  ];
+}
+
+function campSessionLines(sessions) {
+  return (sessions || [])
+    .slice()
+    .sort((a, b) => Number(a.session_number || 0) - Number(b.session_number || 0))
+    .map((session) => `${session.title || `Session ${session.session_number || ""}`} · ${session.display_time || "Time to be confirmed"}`);
+}
+
+function campPassLabel(passType) {
+  return passType === "five_session_pass" ? "5 Session Pass" : "3 Session Pass";
+}
+
+function campTimeLabel(campTime) {
+  if (campTime === "camp_time_b") return "Camp B · 19:00–19:45 UK time";
+  return "Camp A · 13:00–13:45 UK time";
+}
+
+function campShortLabel(campTime) {
+  return campTime === "camp_time_b" ? "Camp B" : "Camp A";
+}
+
+function campTimeOnlyLabel(campTime) {
+  return campTime === "camp_time_b" ? "19:00–19:45 UK time" : "13:00–13:45 UK time";
+}
+
+function campMoney(amount, currency) {
+  const symbol = (currency || "GBP") === "GBP" ? "£" : `${currency || ""} `;
+  return amount == null ? "—" : `${symbol}${Number(amount).toFixed(0)}`;
 }
 
 async function sendTeacherEmail({ subject, heading, intro, booking, classConfig, manageLink, timeLabel, previousStartTime, previousEndTime, statusRows = [] }) {
@@ -402,5 +642,9 @@ module.exports = {
   sendTeacherNewBookingEmail,
   sendTeacherTrialReviewEmail,
   sendTeacherBookingUpdatedEmail,
-  sendTeacherBookingCancelledEmail
+  sendTeacherBookingCancelledEmail,
+  sendCampPaymentPendingEmail,
+  sendCampConfirmedEmail,
+  sendTeacherCampPaidBookingEmail,
+  sendCampCancelledEmail
 };

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Camp Review</title>
+  <style>
+    :root{
+      --cream:#f7f3ea;
+      --paper:#fffaf1;
+      --green:#183f2d;
+      --green2:#214c37;
+      --sage:#d9e8d1;
+      --sage2:#eef6e8;
+      --text:#1f3428;
+      --muted:#68786f;
+      --border:#d9d0c1;
+      --pink:#d9468f;
+      --shadow:0 18px 44px rgba(24,63,45,.12);
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 8% 6%, rgba(24,63,45,.12), transparent 28%),
+        radial-gradient(circle at 88% 10%, rgba(217,70,143,.07), transparent 30%),
+        linear-gradient(180deg,#fbf7ee 0%,var(--cream) 56%,#fffaf1 100%);
+      color:var(--text);
+    }
+    .container{width:min(1120px,92%);margin:0 auto;}
+    .page{padding:26px 0 54px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;}
+    .back{color:var(--muted);text-decoration:none;font-weight:900;font-size:14px;}
+    .badge{display:inline-flex;align-items:center;width:max-content;padding:8px 12px;border-radius:999px;background:var(--sage);color:var(--green);font-weight:950;font-size:13px;}
+    .hero{background:linear-gradient(135deg,#183f2d,#36583a);color:#fffaf1;border-radius:28px;padding:24px;box-shadow:var(--shadow);margin-bottom:22px;}
+    h1{font-size:clamp(32px,4vw,48px);line-height:1.05;margin:12px 0;letter-spacing:-.04em;}
+    h2{font-size:clamp(24px,3vw,34px);line-height:1.1;margin:0 0 10px;letter-spacing:-.03em;}
+    h3{margin:0 0 8px;font-size:19px;letter-spacing:-.02em;}
+    p{line-height:1.6;}
+    .muted{color:var(--muted);}
+    .hero .muted{color:rgba(255,250,241,.82);}
+    .grid{display:grid;grid-template-columns:.78fr 1.22fr;gap:18px;align-items:start;}
+    .card{background:rgba(255,250,241,.92);border:1px solid var(--border);border-radius:24px;padding:20px;box-shadow:var(--shadow);}
+    label{display:grid;gap:7px;font-size:13px;font-weight:900;color:#294335;}
+    input,textarea{width:100%;border:1px solid var(--border);border-radius:14px;padding:13px 14px;font:inherit;color:var(--text);background:white;}
+    textarea{min-height:74px;resize:vertical;}
+    .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+    .btn{border:0;border-radius:999px;padding:11px 15px;font-weight:950;font-family:inherit;cursor:pointer;background:linear-gradient(90deg,#183f2d,#4f6f48);color:#fffaf1;}
+    .btn.secondary{background:white;color:var(--green);border:1px solid var(--border);}
+    .notice{border-radius:16px;padding:12px 14px;margin:12px 0;font-weight:850;line-height:1.5;}
+    .notice.success{background:var(--sage);color:var(--green);border:1px solid #abc9b0;}
+    .notice.error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+    .hidden{display:none;}
+    .matrix-card{background:#1f3428;color:#fffaf1;border-radius:24px;padding:18px;box-shadow:0 24px 60px rgba(24,48,36,.28);}
+    .capacity-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;font-weight:950;}
+    .capacity-title span{color:rgba(255,250,241,.72);font-size:12px;}
+    .matrix{display:grid;gap:7px;}
+    .matrix-row{display:grid;grid-template-columns:78px repeat(6,20px);gap:5px;align-items:center;}
+    .row-label{color:#fffaf1;font-size:11px;font-weight:950;}
+    .slot{width:20px;height:20px;border-radius:6px;background:rgba(255,250,241,.13);border:1px solid rgba(255,250,241,.16);display:grid;place-items:center;color:rgba(31,52,40,.82);font-size:9px;font-weight:950;}
+    .s0{background:#fbbf24;border-color:#fbbf24}.s1{background:#86efac;border-color:#86efac}.s2{background:#93c5fd;border-color:#93c5fd}.s3{background:#fca5a5;border-color:#fca5a5}.s4{background:#c4b5fd;border-color:#c4b5fd}.s5{background:#fde68a;border-color:#fde68a}.s6{background:#99f6e4;border-color:#99f6e4}.s7{background:#f9a8d4;border-color:#f9a8d4}
+    .student-list{display:grid;gap:16px;}
+    .camp-review-section{display:grid;gap:12px;background:#fffaf1;border:1px solid var(--border);border-radius:22px;padding:14px;}
+    .camp-review-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+    .camp-review-head p{margin:4px 0 0;}
+    .camp-count{display:inline-flex;align-items:center;border-radius:999px;background:var(--sage);color:var(--green);font-size:12px;font-weight:950;padding:7px 10px;white-space:nowrap;}
+    .student{background:white;border:1px solid var(--border);border-radius:18px;padding:14px;}
+    .student-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+    .status{font-size:11px;font-weight:950;border-radius:999px;padding:6px 8px;background:#fef3c7;color:#92400e;white-space:nowrap;}
+    .status.approved,.status.confirmed{background:#dcfce7;color:#166534}.status.rejected,.status.cancelled{background:#fee2e2;color:#991b1b}.status.waitlisted{background:#e0f2fe;color:#075985}.status.paid{background:#ede9fe;color:#5b21b6;}
+    .mini-btn{border:1px solid var(--border);border-radius:999px;background:#fff;padding:7px 10px;font-weight:900;font-size:12px;color:#294335;cursor:pointer;}
+    .email-copy{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfe0c5;background:#fffaf1;color:#214c37;border-radius:999px;padding:6px 10px;font-weight:900;font-size:12px;cursor:pointer;margin-right:6px;}
+    .email-copy:hover{border-color:#9fbea8;background:#eef6e8;}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+    .summary div{background:rgba(255,250,241,.13);border:1px solid rgba(255,250,241,.16);border-radius:16px;padding:12px;}
+    .summary strong{display:block;font-size:22px;}
+    @media(max-width:900px){.grid,.summary{grid-template-columns:1fr;}.matrix-row{grid-template-columns:66px repeat(6,18px);gap:4px}.slot{width:18px;height:18px;border-radius:5px;}}
+
+    /* Unified mobile polish: compact spacing, touch-friendly controls, and overflow-safe layouts. */
+    @media (max-width:700px){
+      html{overflow-x:hidden;}
+      body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
+      .page{padding:18px 0 34px;}
+      .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
+
+      .site-nav{padding:8px 0 6px;}
+      .nav-inner{min-height:auto;grid-template-columns:1fr;align-items:flex-start;gap:10px;padding:8px 0 6px;}
+      .brand{font-size:17px;white-space:normal;line-height:1.08;}
+      .brand small{font-size:10px;letter-spacing:.055em;line-height:1.25;}
+      .nav-links{width:100%;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:8px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+      .nav-links::-webkit-scrollbar{display:none;}
+      .nav-links a{flex:0 0 auto;min-height:34px;padding:0 10px;font-size:12px;}
+      .nav-links .nav-book{padding:8px 12px;}
+
+      .topbar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:14px;}
+      .back{font-size:13px;}
+      .badge,.pill,.chip,.status,.spots,.timezone-chip{max-width:100%;white-space:normal;line-height:1.25;}
+      .badge{font-size:12px;padding:7px 10px;}
+
+      h1{font-size:clamp(30px,9.4vw,38px);line-height:1.04;margin:10px 0 12px;}
+      h2{font-size:clamp(24px,7.2vw,30px);line-height:1.12;}
+      h3{font-size:18px;}
+      .sub,.muted,p,li{line-height:1.55;}
+      .sub{font-size:15px;margin-bottom:16px;}
+
+      .hero,.hero-card,.hero-grid,.hero-shell,.request-shell,.main-grid,.content-grid,.split,.layout,.panel-grid,.booking-shell,.review-shell{grid-template-columns:1fr !important;gap:14px;}
+      .hero-card{border-radius:22px;padding:12px;}
+      .hero-panel,.hero-copy,.hero-content{border-radius:18px;padding:18px;min-height:auto;}
+      .section{padding:24px 0;}
+      .section-head{margin-bottom:14px;}
+      .card,.panel,.box,.notice-card{border-radius:20px;padding:18px;max-width:100%;}
+
+      .grid-2,.grid-3,.cards,.route-grid,.trust-grid,.feature-grid,.lesson-grid,.pass-choice-grid,.pass-choice-grid.two-options,.form-grid,.info-grid,.summary-grid,.actions-grid{grid-template-columns:1fr !important;gap:10px;}
+      .mini-points,.info-list{grid-template-columns:1fr !important;gap:9px;}
+      .mini-points div,.info-list div{padding:11px;font-size:13px;}
+
+      .btns,.actions,.cta-row,.button-row,.form-actions{display:grid !important;grid-template-columns:1fr !important;gap:10px;width:100%;}
+      .btn,button,[type="submit"],.button,.cta{width:100%;min-height:46px;padding:12px 16px;justify-content:center;text-align:center;}
+
+      input,select,textarea{width:100%;max-width:100%;min-height:46px;padding:12px 13px;font-size:16px;}
+      textarea{min-height:104px;}
+      label{min-width:0;}
+
+      .calendar,.calendar-grid,.time-grid,.slot-grid,.availability-grid,.matrix,.matrix-wrap,.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      table{min-width:560px;}
+      .time-slot,.slot,.day-cell{min-width:44px;min-height:38px;}
+
+      .session,.booking-row,.review-row,.summary-row{grid-template-columns:auto minmax(0,1fr) !important;align-items:flex-start;border-radius:16px;padding:11px;}
+      .session > span,.booking-row > span,.review-row > span,.summary-row > span{min-width:0;}
+      .session input{margin-top:3px;}
+      .session-time{display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+      .spots{grid-column:2;width:max-content;margin-top:2px;}
+
+      details summary{align-items:flex-start;}
+      .terms-checkbox,.checkbox-row{grid-template-columns:auto minmax(0,1fr) !important;}
+    }
+
+    @media (max-width:380px){
+      .container,.wrap,.shell{width:min(100% - 20px,1080px);}
+      .hero-card{padding:10px;}
+      .hero-panel,.hero-copy,.hero-content,.card,.panel,.box,.notice-card{padding:16px;}
+      .nav-links a{font-size:11.5px;padding:0 9px;}
+    }
+
+
+    @media (max-width:700px){
+      .matrix-row{grid-template-columns:66px repeat(6,18px);gap:4px;min-width:210px;}
+      .slot{width:18px;height:18px;border-radius:5px;}
+      .review-actions,.admin-actions{display:grid;grid-template-columns:1fr;gap:10px;}
+    }
+
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="container">
+      <div class="topbar">
+        <a class="back" href="english-camp.html">← Back to English Camp</a>
+        <span class="badge">Private teacher review · Group Class</span>
+      </div>
+      <section class="hero">
+        <span class="badge">English Camp Review</span>
+        <h1>Review paid bookings, payment, and capacity.</h1>
+        <p class="muted">Paid English Camp bookings are confirmed automatically. Use Cancel only if a booking cannot go ahead.</p>
+        <div class="summary" id="summaryCards">
+          <div><strong>—</strong><span>Pending Payment</span></div>
+          <div><strong>—</strong><span>Confirmed</span></div>
+          <div><strong>—</strong><span>Canceled</span></div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <aside class="card">
+          <h2>Load teacher board</h2>
+          <p class="muted">Enter the private group admin code configured in Netlify. For MVP, this avoids adding a full login system.</p>
+          <label>Group admin code<input id="adminCode" type="password" placeholder="Enter admin code" /></label>
+          <div class="btns"><button class="btn" id="loadBtn">Load review board</button><button class="btn secondary" id="refreshBtn">Refresh</button></div>
+          <div id="notice" class="notice hidden"></div>
+        </aside>
+
+        <section class="matrix-card">
+          <div class="capacity-title"><strong>5 × 6 capacity matrix</strong><span id="matrixStatus">confirmed seats only</span></div>
+          <div class="matrix" id="matrix"></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:18px;">
+        <h2>Student requests</h2>
+        <p class="muted">Bookings move from Pending Payment to Confirmed automatically after Stripe payment succeeds. If a confirmed booking cannot go ahead, use Cancel and then process any refund in Stripe.</p>
+        <div class="student-list" id="studentList"><p class="muted">Load the board to see requests.</p></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const adminCode = document.getElementById('adminCode');
+    const loadBtn = document.getElementById('loadBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const notice = document.getElementById('notice');
+    const matrix = document.getElementById('matrix');
+    const studentList = document.getElementById('studentList');
+    const summaryCards = document.getElementById('summaryCards');
+    const matrixStatus = document.getElementById('matrixStatus');
+    let state = { groupClass:null, sessions:[], registrations:[], links:[] };
+
+    function showNotice(type, message) {
+      notice.className = `notice ${type}`;
+      notice.textContent = message;
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Group-Admin-Code': adminCode.value.trim(),
+          ...(options.headers || {})
+        }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Request failed.');
+      return data;
+    }
+
+    async function loadBoard() {
+      if (!adminCode.value.trim()) {
+        showNotice('error', 'Please enter the group admin code.');
+        return;
+      }
+      loadBtn.disabled = true;
+      try {
+        state = await api('/.netlify/functions/get-group-review');
+        showNotice('success', 'Review board loaded.');
+        render();
+      } catch (error) {
+        showNotice('error', error.message);
+      } finally {
+        loadBtn.disabled = false;
+      }
+    }
+
+    async function updateRegistration(registrationId, action) {
+      try {
+        await api('/.netlify/functions/update-group-registration', {
+          method:'POST',
+          body:JSON.stringify({ registrationId, action })
+        });
+        await loadBoard();
+      } catch (error) {
+        showNotice('error', error.message);
+      }
+    }
+
+    function render() {
+      renderSummary();
+      renderMatrix();
+      renderStudents();
+    }
+
+    function renderSummary() {
+      const pendingPayment = state.registrations.filter(r => r.payment_status !== 'paid' && !['cancelled','canceled'].includes(r.status)).length;
+      const confirmed = state.registrations.filter(r => r.status === 'confirmed').length;
+      const canceled = state.registrations.filter(r => ['cancelled','canceled'].includes(r.status)).length;
+      summaryCards.innerHTML = [
+        [pendingPayment, 'Pending Payment'], [confirmed, 'Confirmed'], [canceled, 'Canceled']
+      ].map(([num,label]) => `<div><strong>${num}</strong><span>${label}</span></div>`).join('');
+    }
+
+    function renderMatrix() {
+      const approved = state.registrations.filter(r => r.status === 'confirmed');
+      const colorMap = new Map(approved.map((r, i) => [r.id, i % 8]));
+      const linksBySession = new Map();
+      state.links.forEach(link => {
+        if (link.selection_status !== 'approved') return;
+        const registration = state.registrations.find(r => r.id === link.registration_id);
+        if (!registration || registration.status !== 'confirmed') return;
+        if (!linksBySession.has(link.session_id)) linksBySession.set(link.session_id, []);
+        linksBySession.get(link.session_id).push(registration);
+      });
+      matrix.innerHTML = state.sessions.map(session => {
+        const regs = linksBySession.get(session.id) || [];
+        const cells = Array.from({length: Number(session.capacity || 6)}, (_, i) => {
+          const reg = regs[i];
+          if (!reg) return '<div class="slot"></div>';
+          const initial = (reg.student_name || '?').trim().slice(0,1).toUpperCase();
+          return `<div class="slot s${colorMap.get(reg.id) || 0}" title="${escapeHtml(reg.student_name)}">${escapeHtml(initial)}</div>`;
+        }).join('');
+        return `<div class="matrix-row"><div class="row-label">${escapeHtml(matrixSessionLabel(session))}</div>${cells}</div>`;
+      }).join('');
+      matrixStatus.textContent = `${approved.length} confirmed students`;
+    }
+
+    function renderStudents() {
+      if (!state.registrations.length) {
+        studentList.innerHTML = '<p class="muted">No English Camp requests yet.</p>';
+        return;
+      }
+      const sessionsById = new Map(state.sessions.map(s => [s.id, s]));
+      const camps = [
+        { key: 'camp_time_a', title: 'Camp A', time: '13:00–13:45 UK time' },
+        { key: 'camp_time_b', title: 'Camp B', time: '19:00–19:45 UK time' }
+      ];
+      studentList.innerHTML = camps.map(camp => {
+        const registrations = state.registrations.filter(reg => (reg.camp_time || 'camp_time_a') === camp.key);
+        const cards = registrations.length ? registrations.map(reg => renderStudentCard(reg, sessionsById)).join('') : '<p class="muted">No requests for this camp time yet.</p>';
+        return `<section class="camp-review-section">
+          <div class="camp-review-head"><div><h3>${camp.title}</h3><p class="muted">Monday to Friday · ${camp.time}</p></div><span class="camp-count">${registrations.length} request${registrations.length === 1 ? '' : 's'}</span></div>
+          ${cards}
+        </section>`;
+      }).join('');
+    }
+
+    function renderStudentCard(reg, sessionsById) {
+      const selected = state.links
+        .filter(link => link.registration_id === reg.id)
+        .map(link => sessionShortLabel(sessionsById.get(link.session_id)))
+        .filter(Boolean)
+        .sort()
+        .join(', ');
+      const statusLabel = displayStatus(reg);
+      const canCancel = !['cancelled','canceled'].includes(reg.status);
+      return `<article class="student">
+        <div class="student-top"><strong>${escapeHtml(reg.student_name)} · ${campTimeLabel(reg.camp_time)} · ${reg.pass_type === 'five_session_pass' ? '5 sessions' : '3 sessions'}</strong><span class="status ${reg.status}">${escapeHtml(statusLabel)}</span></div>
+        <p class="muted"><button class="email-copy" type="button" onclick="copyEmail('${escapeAttr(reg.student_email)}')">Copy email</button>${escapeHtml(reg.student_email)} · Sessions ${escapeHtml(selected || '—')} · ${formatPrice(reg)} · Payment: <span class="status ${reg.payment_status === 'paid' ? 'paid' : ''}">${escapeHtml(displayPayment(reg.payment_status))}</span></p>
+        <p class="muted">Level: ${escapeHtml(reg.level || '—')}</p>
+        <div class="btns">
+          ${canCancel ? `<button class="mini-btn" onclick="updateRegistration('${reg.id}','cancel')">Cancel</button>` : ''}
+        </div>
+      </article>`;
+    }
+
+    function displayStatus(reg) {
+      if (['cancelled','canceled'].includes(reg.status)) return 'Canceled';
+      if (reg.status === 'confirmed') return 'Confirmed';
+      if (reg.payment_status !== 'paid') return 'Pending Payment';
+      return reg.status ? reg.status.replace('_', ' ') : '—';
+    }
+
+    function displayPayment(paymentStatus) {
+      return paymentStatus === 'paid' ? 'Paid' : 'Unpaid';
+    }
+
+    function campTimeLabel(campTime) {
+      return campTime === 'camp_time_b' ? 'Camp B · 19:00–19:45 UK time' : 'Camp A · 13:00–13:45 UK time';
+    }
+
+    function sessionShortLabel(session) {
+      if (!session) return '';
+      const camp = session.camp_time === 'camp_time_b' ? 'B' : 'A';
+      return `${camp}${session.session_number || ''}`;
+    }
+
+    function matrixSessionLabel(session) {
+      if (!session) return 'Session';
+      const camp = session.camp_time === 'camp_time_b' ? 'Camp B' : 'Camp A';
+      return `${camp} · S${session.session_number || ''}`;
+    }
+
+    function formatPrice(reg) {
+      const currency = reg.currency || 'GBP';
+      const symbol = currency === 'GBP' ? '£' : `${currency} `;
+      if (reg.pass_price == null) return 'Price: —';
+      const total = `${symbol}${Number(reg.pass_price).toFixed(0)}`;
+      if (reg.pass_type === 'five_session_pass' && reg.price_per_session != null) {
+        return `Price: ${total} (${symbol}${Number(reg.price_per_session || 0).toFixed(0)} / session)`;
+      }
+      return `Price: ${total}`;
+    }
+
+    async function copyEmail(email) {
+      try {
+        await navigator.clipboard.writeText(email || '');
+        statusMessage.textContent = 'Email copied.';
+      } catch (error) {
+        statusMessage.textContent = email || 'No email available.';
+      }
+    }
+
+    function escapeAttr(value) {
+      return String(value ?? '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
+    }
+
+    loadBtn.addEventListener('click', loadBoard);
+    refreshBtn.addEventListener('click', loadBoard);
+  </script>
+</body>
+</html>

@@ -31,7 +31,7 @@
     }
 
     .container{width:min(1080px,92%);margin:0 auto;}
-    .page{padding:26px 0 48px;}
+    .page{padding:104px 0 48px;}
 
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;}
     .back{color:var(--muted);text-decoration:none;font-weight:800;font-size:14px;}
@@ -39,9 +39,11 @@
     .badge-accent{background:#f7e7f0;color:#9f1d63;}
 
     .site-nav{
-      position:sticky;
+      position:fixed;
       top:0;
-      z-index:50;
+      left:0;
+      right:0;
+      z-index:1000;
       background:rgba(255,250,241,.88);
       padding:14px 0 8px;
       border-bottom:1px solid rgba(207,224,197,.78);
@@ -294,7 +296,7 @@
 
     /* Mobile refinement pass: reduce crowding, prevent overflow, and make the icon/text relationship cleaner. */
     @media (max-width:700px){
-      .page{padding:18px 0 34px;}
+      .page{padding:132px 0 34px;}
       .container{width:min(100% - 24px,1080px);}
 
       .site-nav{padding:8px 0 6px;}
@@ -383,7 +385,7 @@
     @media (max-width:700px){
       html{overflow-x:hidden;}
       body{overflow-x:hidden;-webkit-text-size-adjust:100%;}
-      .page{padding:18px 0 34px;}
+      .page{padding:132px 0 34px;}
       .container,.wrap,.shell{width:min(100% - 24px,1080px);max-width:100%;margin-left:auto;margin-right:auto;}
 
       .site-nav{padding:8px 0 6px;}

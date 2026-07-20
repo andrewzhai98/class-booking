@@ -38,36 +38,48 @@ exports.handler = async (event) => {
       throw userError('Teacher Becky’s English Summer Camp is not open for requests right now.', 409);
     }
 
+    const sessions = await supabaseFetch(`group_sessions?class_id=eq.${groupClass.id}&session_key=in.(${clean.selectedSessions.join(',')})&select=id,session_key,session_number,title,display_time,camp_time,capacity`);
+    if (!sessions || sessions.length !== clean.selectedSessions.length) {
+      throw userError('One or more selected sessions are unavailable.', 400);
+    }
+
+    await enforceCapacity(sessions);
+
+    const pricing = getPassPricing(clean.campTime, clean.passType);
     const activeRows = await supabaseFetch(`group_registrations?class_id=eq.${encodeURIComponent(groupClass.id)}&student_email=eq.${encodeURIComponent(clean.studentEmail)}&status=not.in.(rejected,cancelled)&select=id,student_name,student_email,camp_time,pass_type,status,payment_status,pass_price,price_per_session,currency,created_at&order=created_at.desc&limit=1`);
     const activeRegistration = activeRows?.[0];
     if (activeRegistration) {
-      const existingPricing = getPassPricing(activeRegistration.camp_time || clean.campTime, activeRegistration.pass_type || clean.passType);
-      const existingSessions = await getRegistrationSessions(activeRegistration.id);
-      let checkoutUrl = '';
-
       if (activeRegistration.payment_status === 'unpaid') {
+        const updatedRegistration = await updateUnpaidRegistration({
+          registration: activeRegistration,
+          clean,
+          pricing,
+          sessions
+        });
+        let checkoutUrl = '';
+
         if (STRIPE_SECRET_KEY) {
           checkoutUrl = await createStripeCheckout({
-            registration: activeRegistration,
+            registration: updatedRegistration,
             groupClass,
-            sessions: existingSessions,
-            pricing: existingPricing,
-            passType: activeRegistration.pass_type || clean.passType
+            sessions,
+            pricing,
+            passType: clean.passType
           });
-          await sendPaymentPendingEmailSafely({ registration: activeRegistration, groupClass, sessions: existingSessions, checkoutUrl });
+          await sendPaymentPendingEmailSafely({ registration: updatedRegistration, groupClass, sessions, checkoutUrl });
         }
 
         return json(200, {
           ok: true,
           duplicate: true,
-          reusedRegistration: true,
-          registrationId: activeRegistration.id,
-          status: activeRegistration.status,
-          paymentStatus: activeRegistration.payment_status,
+          updatedRegistration: true,
+          registrationId: updatedRegistration.id,
+          status: updatedRegistration.status,
+          paymentStatus: updatedRegistration.payment_status,
           checkoutUrl,
           message: checkoutUrl
-            ? 'You already have an active Teacher Becky’s English Summer Camp request. Please continue payment for your existing request.'
-            : 'You already have an active Teacher Becky’s English Summer Camp request. Please wait for the teacher to review it, or contact the teacher if you need to change it.'
+            ? 'Your active Teacher Becky’s English Summer Camp request has been updated. Please continue to the secure payment page.'
+            : 'Your active Teacher Becky’s English Summer Camp request has been updated. Please contact the teacher to complete payment and confirm your place.'
         });
       }
 
@@ -77,15 +89,6 @@ exports.handler = async (event) => {
 
       throw userError('You already have an active Teacher Becky’s English Summer Camp booking. Please contact the teacher if you need to change it.', 409);
     }
-
-    const sessions = await supabaseFetch(`group_sessions?class_id=eq.${groupClass.id}&session_key=in.(${clean.selectedSessions.join(',')})&select=id,session_key,session_number,title,display_time,camp_time,capacity`);
-    if (!sessions || sessions.length !== clean.selectedSessions.length) {
-      throw userError('One or more selected sessions are unavailable.', 400);
-    }
-
-    await enforceCapacity(sessions);
-
-    const pricing = getPassPricing(clean.campTime, clean.passType);
     const registrationRows = await supabaseFetch('group_registrations', {
       method: 'POST',
       body: JSON.stringify({
@@ -199,6 +202,57 @@ async function enforceCapacity(sessions) {
   }
 }
 
+async function updateUnpaidRegistration({ registration, clean, pricing, sessions }) {
+  const updatedRows = await supabaseFetch(`group_registrations?id=eq.${encodeURIComponent(registration.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      student_name: clean.studentName,
+      student_email: clean.studentEmail,
+      level: clean.level,
+      learning_goal: clean.learningGoal,
+      camp_time: clean.campTime,
+      pass_type: clean.passType,
+      status: 'pending_payment',
+      payment_status: 'unpaid',
+      pass_price: pricing.total,
+      price_per_session: pricing.perSession,
+      currency: 'GBP',
+      updated_at: new Date().toISOString()
+    })
+  });
+  const updatedRegistration = updatedRows?.[0] || {
+    ...registration,
+    student_name: clean.studentName,
+    student_email: clean.studentEmail,
+    level: clean.level,
+    learning_goal: clean.learningGoal,
+    camp_time: clean.campTime,
+    pass_type: clean.passType,
+    status: 'pending_payment',
+    payment_status: 'unpaid',
+    pass_price: pricing.total,
+    price_per_session: pricing.perSession,
+    currency: 'GBP'
+  };
+
+  await supabaseFetch(`group_registration_sessions?registration_id=eq.${encodeURIComponent(registration.id)}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' }
+  });
+
+  const linkRows = sessions.map((session) => ({
+    registration_id: registration.id,
+    session_id: session.id,
+    selection_status: 'requested'
+  }));
+  await supabaseFetch('group_registration_sessions', {
+    method: 'POST',
+    body: JSON.stringify(linkRows)
+  });
+
+  return updatedRegistration;
+}
+
 async function getRegistrationSessions(registrationId) {
   const links = await supabaseFetch(`group_registration_sessions?registration_id=eq.${encodeURIComponent(registrationId)}&select=session_id`);
   const sessionIds = (links || []).map((link) => link.session_id).filter(Boolean);
@@ -226,13 +280,14 @@ async function createStripeCheckout({ registration, groupClass, sessions, pricin
     .join(', ');
   const campTime = registration.camp_time || orderedSessions[0]?.camp_time || 'camp_time_a';
   const camp = CAMP_OPTIONS[campTime] || CAMP_OPTIONS.camp_time_a;
-  const productName = `Teacher Becky’s English Summer Camp — ${camp.label} ${camp.timeLabel} — ${pricing.label}`;
+  const productName = `Teacher Becky’s English Summer Camp — ${camp.label} — ${pricing.label}`;
   const productDescription = sessionDays
-    ? `Summer in the UK · Selected sessions: ${sessionDays} · ${camp.timeLabel}`
-    : sessionSummary || `${camp.label} · ${camp.timeLabel}`;
+    ? `Summer in the UK · ${camp.timeLabel} · Selected sessions: ${sessionDays}`
+    : sessionSummary || `Summer in the UK · ${camp.label} · ${camp.timeLabel}`;
 
   const params = new URLSearchParams();
   params.append('mode', 'payment');
+  params.append('payment_method_types[0]', 'card');
   params.append('success_url', successUrl);
   params.append('cancel_url', cancelUrl);
   params.append('customer_email', registration.student_email);

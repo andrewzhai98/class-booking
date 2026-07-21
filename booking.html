@@ -723,13 +723,11 @@
           <div id="bookingSummary" class="summary">
             <div class="summary-row class-summary-row">
               <div><strong>Class:</strong> <span id="selectedClassText">Not selected yet</span></div>
-              <button class="link-btn hidden" type="button" id="changeClassBtn">Change Class</button>
             </div>
             <div><strong>Duration:</strong> <span id="selectedDurationText">Not selected yet</span></div>
             <div><strong>Credits required:</strong> <span id="selectedCreditText">Not selected yet</span></div>
             <div class="summary-row time-summary-row" id="timeSummaryRow">
               <div><strong>Selected Time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
-              <button class="link-btn hidden" type="button" id="changeTimeBtn">Change Time</button>
             </div>
           </div>
 
@@ -937,9 +935,7 @@
       formNotice: document.getElementById("formNotice"),
       submitBtn: document.getElementById("submitBtn"),
       backToDateBtn: document.getElementById("backToDateBtn"),
-      backToTimeBtn: document.getElementById("backToTimeBtn"),
-      changeClassBtn: document.getElementById("changeClassBtn"),
-      changeTimeBtn: document.getElementById("changeTimeBtn")
+      backToTimeBtn: document.getElementById("backToTimeBtn")
     };
 
     document.addEventListener("DOMContentLoaded", init);
@@ -955,8 +951,6 @@
       elements.nextMonthBtn.addEventListener("click", goToNextMonth);
       elements.backToDateBtn.addEventListener("click", showDatePanel);
       elements.backToTimeBtn.addEventListener("click", showTimePanel);
-      elements.changeClassBtn.addEventListener("click", showClassPanel);
-      elements.changeTimeBtn.addEventListener("click", showTimePanel);
       elements.bookingForm.addEventListener("submit", submitBooking);
       elements.classButtons.forEach(button => {
         button.addEventListener("click", () => selectClass(button.getAttribute("data-class-type")));
@@ -1224,8 +1218,6 @@
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.remove("active");
-      elements.changeClassBtn.classList.add("hidden");
-      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showDatePanel() {
@@ -1237,8 +1229,6 @@
       elements.stepDate.classList.add("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.remove("active");
-      elements.changeClassBtn.classList.remove("hidden");
-      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showTimePanel() {
@@ -1250,8 +1240,6 @@
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.add("active");
       elements.stepDetails.classList.remove("active");
-      elements.changeClassBtn.classList.remove("hidden");
-      elements.changeTimeBtn.classList.add("hidden");
     }
 
     function showDetailsPanel() {
@@ -1263,8 +1251,6 @@
       elements.stepDate.classList.remove("active");
       elements.stepTime.classList.remove("active");
       elements.stepDetails.classList.add("active");
-      elements.changeClassBtn.classList.remove("hidden");
-      elements.changeTimeBtn.classList.remove("hidden");
     }
 
     function setNotice(element, type, message, visible) {

@@ -616,6 +616,73 @@
       .slot-grid{grid-template-columns:1fr !important;overflow-x:visible;}
       .slot{width:100%;min-width:0;touch-action:manipulation;}
       .time-grid,.slot-list{grid-template-columns:1fr !important;}
+
+      .summary{padding:18px;}
+      .summary-row{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        gap:12px;
+        padding:0;
+      }
+      .summary-row > div{min-width:0;}
+      .time-summary-row.has-selected-time{
+        grid-template-columns:1fr;
+        gap:8px;
+        margin-top:4px;
+      }
+      .time-summary-row.has-selected-time .link-btn{justify-self:end;}
+      .summary .link-btn{
+        width:104px;
+        min-width:104px;
+        min-height:34px;
+        justify-self:end;
+        align-self:center;
+        padding:7px 0;
+        border:1px solid #d8dde6;
+        border-radius:999px;
+        background:linear-gradient(180deg,#ffffff 0%,#f6f7f9 100%);
+        color:#4b5563;
+        text-align:center;
+        font-size:13.5px;
+        font-weight:900;
+        line-height:1;
+        letter-spacing:-.01em;
+        box-shadow:0 7px 16px rgba(31,41,55,.07), inset 0 1px 0 rgba(255,255,255,.92);
+        white-space:nowrap;
+        text-decoration:none;
+        transition:transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease, color .16s ease;
+      }
+      .summary .link-btn:hover{
+        border-color:#c7ced8;
+        background:linear-gradient(180deg,#ffffff 0%,#eef1f5 100%);
+        color:#374151;
+        box-shadow:0 9px 20px rgba(31,41,55,.10), inset 0 1px 0 rgba(255,255,255,.95);
+        text-decoration:none;
+        transform:translateY(-1px);
+      }
+      .summary .link-btn:active{
+        transform:translateY(0);
+        box-shadow:0 5px 12px rgba(31,41,55,.08), inset 0 1px 2px rgba(31,41,55,.08);
+      }
+      .summary .link-btn:focus-visible{
+        outline:3px solid rgba(148,163,184,.28);
+        outline-offset:2px;
+      }
+      #selectedClassText{
+        display:inline;
+        max-width:100%;
+        overflow-wrap:break-word;
+      }
+      #selectedTimeText{
+        display:inline;
+        max-width:100%;
+        overflow-wrap:break-word;
+      }
+      .time-summary-row.has-selected-time #selectedTimeText{
+        display:block;
+        margin-top:3px;
+      }
     }
 
   </style>
@@ -654,15 +721,15 @@
           </div>
 
           <div id="bookingSummary" class="summary">
-            <div class="summary-row">
+            <div class="summary-row class-summary-row">
               <div><strong>Class:</strong> <span id="selectedClassText">Not selected yet</span></div>
-              <button class="link-btn hidden" type="button" id="changeClassBtn">Change</button>
+              <button class="link-btn hidden" type="button" id="changeClassBtn">Change Class</button>
             </div>
             <div><strong>Duration:</strong> <span id="selectedDurationText">Not selected yet</span></div>
             <div><strong>Credits required:</strong> <span id="selectedCreditText">Not selected yet</span></div>
-            <div class="summary-row">
-              <div><strong>Selected time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
-              <button class="link-btn hidden" type="button" id="changeTimeBtn">Change</button>
+            <div class="summary-row time-summary-row" id="timeSummaryRow">
+              <div><strong>Selected Time:</strong> <span id="selectedTimeText">Not selected yet</span></div>
+              <button class="link-btn hidden" type="button" id="changeTimeBtn">Change Time</button>
             </div>
           </div>
 
@@ -862,6 +929,7 @@
       selectedClassText: document.getElementById("selectedClassText"),
       selectedDurationText: document.getElementById("selectedDurationText"),
       selectedCreditText: document.getElementById("selectedCreditText"),
+      timeSummaryRow: document.getElementById("timeSummaryRow"),
       selectedTimeText: document.getElementById("selectedTimeText"),
       slots: document.getElementById("slots"),
       slotNotice: document.getElementById("slotNotice"),
@@ -986,6 +1054,7 @@
       elements.trialApprovalPanel?.classList.toggle("visible", isFreeTrial);
       elements.submitBtn.textContent = isFreeTrial ? "Submit Trial Request" : "Confirm Booking";
       elements.selectedTimeText.textContent = "Not selected yet";
+      elements.timeSummaryRow?.classList.remove("has-selected-time");
       showDatePanel();
     }
 
@@ -993,6 +1062,7 @@
       state.selectedDate = date;
       state.selectedSlot = null;
       elements.selectedTimeText.textContent = "Not selected yet";
+      elements.timeSummaryRow?.classList.remove("has-selected-time");
       renderCalendar();
       showTimePanel();
       await loadAvailability(date);
@@ -1066,6 +1136,7 @@
       const selectedButton = elements.slots.querySelector(`[data-index="${selectedIndex}"]`);
       if (selectedButton) selectedButton.classList.add("selected");
       elements.selectedTimeText.textContent = `${formatDateTimeRange(start, end)} (${state.timezone})`;
+      elements.timeSummaryRow?.classList.add("has-selected-time");
       showDetailsPanel();
     }
 
